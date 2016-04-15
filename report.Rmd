@@ -143,6 +143,9 @@ pimaDf <- pimaDf  %>% mutate(TargetOutput = as.factor(TargetOutput))
 ```
 
 ## Results of 10 by 10 CV for each dataset & algorithm pair
+
+### 10x10 CV helper function
+This function takes as input a dataframe and an algorithm and does stratified 10x10 CV with random seeds on the given algorithm model.
 ```{r cache=TRUE}
 doCV10by10 <- function(df,algorithm) {
   randSeeds <- c(100, 458, 2532, 324, 7655, 987, 723, 247, 956, 3421)
@@ -155,4 +158,85 @@ doCV10by10 <- function(df,algorithm) {
   }
   res / 10
 }
+```
+
+### 10x10 CV calculations
+Now we proceed by calculating all our required 10x10 CV calculations
+```{r cache=TRUE}
+#sonar
+sonarJ48 <- doCV10by10(sonarDf, J48)
+sonarRF <- doCV10by10(sonarDf, RandomForest)
+sonarSVM <- doCV10by10(sonarDf, SMO)
+sonarNB <- doCV10by10(sonarDf, NaiveBayes)
+#sonarNN <- doCV10by10(sonarDf, NeuralNetwork)
+sonarBag <- doCV10by10(sonarDf, Bagging)
+sonarBoost <- doCV10by10(sonarDf, AdaBoostM1)
+
+#hepatitis
+hepatitisJ48 <- doCV10by10(hepatitisDf, J48)
+hepatitisRF <- doCV10by10(hepatitisDf, RandomForest)
+hepatitisSVM <- doCV10by10(hepatitisDf, SMO)
+hepatitisNB <- doCV10by10(hepatitisDf, NaiveBayes)
+#hepatitisNN <- doCV10by10(hepatitisDf, NeuralNetwork)
+hepatitisBag <- doCV10by10(hepatitisDf, Bagging)
+hepatitisBoost <- doCV10by10(hepatitisDf, AdaBoostM1)
+
+#spect
+spectJ48 <- doCV10by10(spectDf, J48)
+spectRF <- doCV10by10(spectDf, RandomForest)
+spectSVM <- doCV10by10(spectDf, SMO)
+spectNB <- doCV10by10(spectDf, NaiveBayes)
+#spectNN <- doCV10by10(spectDf, NeuralNetwork)
+spectBag <- doCV10by10(spectDf, Bagging)
+spectBoost <- doCV10by10(spectDf, AdaBoostM1)
+
+#pima
+pimaJ48 <- doCV10by10(pimaDf, J48)
+pimaRF <- doCV10by10(pimaDf, RandomForest)
+pimaSVM <- doCV10by10(pimaDf, SMO)
+pimaNB <- doCV10by10(pimaDf, NaiveBayes)
+#pimaNN <- doCV10by10(pimaDf, NeuralNetwork)
+pimaBag <- doCV10by10(pimaDf, Bagging)
+pimaBoost <- doCV10by10(pimaDf, AdaBoostM1)
+```
+
+### Metric extraction helper function
+This function extracts a given metric from the previous calculations, and displays it.
+```{r cache=TRUE}
+showMetric <- function(i) {
+  mat <- matrix(c(sonarJ48[i], hepatitisJ48[i], spectJ48[i],pimaJ48[i],
+                   sonarRF[i], hepatitisRF[i], spectRF[i],pimaRF[i],
+                   sonarSVM[i], hepatitisSVM[i], spectSVM[i],pimaSVM[i], 
+                   sonarNB[i], hepatitisNB[i], spectNB[i],pimaNB[i], 
+                   sonarBag[i], hepatitisBag[i], spectBag[i],pimaBag[i], 
+                   sonarBoost[i],hepatitisBoost[i],spectBoost[i],pimaBoost[i]),
+                 nrow = 4, ncol = 6)
+colnames(mat) <- c("C4.5 DT", "Random Forest", "SVM", "Naive Bayes", "Bag", "Boost")
+rownames(mat) <- c("Sonar", "Hepatitis", "Spect", "Pima")
+mat %>% kable
+}
+```
+
+### Accuracies comparison
+Now we extract the accuracy results from the above calculations
+```{r}
+showMetric(1)
+```
+
+### Precision comparison
+Now we extract the precision results from the above calculations
+```{r}
+showMetric(2)
+```
+
+### Recall comparison
+Now we extract the recall results from the above calculations
+```{r}
+showMetric(3)
+```
+
+### F1 comparison
+Now we extract the F1 results from the above calculations
+```{r}
+showMetric(4)
 ```

@@ -294,20 +294,12 @@ tenFoldModel$confusionMatrix %&gt;% getEvaluation %&gt;% kable</code></pre>
 <td align="right">0.8738739</td>
 <td align="right">0.8434783</td>
 </tr>
-<tr class="even">
-<td align="right">### Bagging</td>
-<td align="right"></td>
-<td align="right"></td>
-<td align="right"></td>
-</tr>
-<tr class="odd">
-<td align="right">Now we will</td>
-<td align="right">implement us</td>
-<td align="right">ing the ense</td>
-<td align="right">mble learning method, using Cart as the base classifier, again with stratified 10-fold CV.</td>
-</tr>
 </tbody>
 </table>
+</div>
+<div id="bagging" class="section level3">
+<h3>Bagging</h3>
+<p>Now we will implement using the ensemble learning method, using Cart as the base classifier, again with stratified 10-fold CV.</p>
 <pre class="r"><code>model &lt;- Bagging(TargetOutput ~ ., data = sonarDf)
 #(model %&gt;% summary)$confusionMatrix %&gt;% getEvaluation %&gt;% kable
 tenFoldModel &lt;- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
@@ -384,6 +376,303 @@ spectDf &lt;- spectDf  %&gt;% mutate(TargetOutput = as.factor(TargetOutput))</co
 pimaDf &lt;- read.csv('datasets/pima-indians-diabetes.data', header = FALSE)
 names(pimaDf)[names(pimaDf)==&quot;V9&quot;] &lt;- &quot;TargetOutput&quot;
 pimaDf &lt;- pimaDf  %&gt;% mutate(TargetOutput = as.factor(TargetOutput))</code></pre>
+</div>
+</div>
+<div id="results-of-10-by-10-cv-for-each-dataset-algorithm-pair" class="section level2">
+<h2>Results of 10 by 10 CV for each dataset &amp; algorithm pair</h2>
+<div id="x10-cv-helper-function" class="section level3">
+<h3>10x10 CV helper function</h3>
+<p>This function takes as input a dataframe and an algorithm and does stratified 10x10 CV with random seeds on the given algorithm model.</p>
+<pre class="r"><code>doCV10by10 &lt;- function(df,algorithm) {
+  randSeeds &lt;- c(100, 458, 2532, 324, 7655, 987, 723, 247, 956, 3421)
+  model &lt;- algorithm(TargetOutput ~ ., data = df)
+  res &lt;- c(0,0,0,0)
+  for (s in randSeeds) {
+    tenFoldModel &lt;- evaluate_Weka_classifier(model, numFolds = 10, seed = s)
+    myMetrics &lt;- tenFoldModel$confusionMatrix %&gt;% getEvaluation
+    res &lt;- res + myMetrics
+  }
+  res / 10
+}</code></pre>
+</div>
+<div id="x10-cv-calculations" class="section level3">
+<h3>10x10 CV calculations</h3>
+<p>Now we proceed by calculating all our required 10x10 CV calculations</p>
+<pre class="r"><code>#sonar
+sonarJ48 &lt;- doCV10by10(sonarDf, J48)
+sonarRF &lt;- doCV10by10(sonarDf, RandomForest)
+sonarSVM &lt;- doCV10by10(sonarDf, SMO)
+sonarNB &lt;- doCV10by10(sonarDf, NaiveBayes)
+#sonarNN &lt;- doCV10by10(sonarDf, NeuralNetwork)
+sonarBag &lt;- doCV10by10(sonarDf, Bagging)
+sonarBoost &lt;- doCV10by10(sonarDf, AdaBoostM1)
+
+#hepatitis
+hepatitisJ48 &lt;- doCV10by10(hepatitisDf, J48)
+hepatitisRF &lt;- doCV10by10(hepatitisDf, RandomForest)
+hepatitisSVM &lt;- doCV10by10(hepatitisDf, SMO)
+hepatitisNB &lt;- doCV10by10(hepatitisDf, NaiveBayes)
+#hepatitisNN &lt;- doCV10by10(hepatitisDf, NeuralNetwork)
+hepatitisBag &lt;- doCV10by10(hepatitisDf, Bagging)
+hepatitisBoost &lt;- doCV10by10(hepatitisDf, AdaBoostM1)
+
+#spect
+spectJ48 &lt;- doCV10by10(spectDf, J48)
+spectRF &lt;- doCV10by10(spectDf, RandomForest)
+spectSVM &lt;- doCV10by10(spectDf, SMO)
+spectNB &lt;- doCV10by10(spectDf, NaiveBayes)
+#spectNN &lt;- doCV10by10(spectDf, NeuralNetwork)
+spectBag &lt;- doCV10by10(spectDf, Bagging)
+spectBoost &lt;- doCV10by10(spectDf, AdaBoostM1)
+
+#pima
+pimaJ48 &lt;- doCV10by10(pimaDf, J48)
+pimaRF &lt;- doCV10by10(pimaDf, RandomForest)
+pimaSVM &lt;- doCV10by10(pimaDf, SMO)
+pimaNB &lt;- doCV10by10(pimaDf, NaiveBayes)
+#pimaNN &lt;- doCV10by10(pimaDf, NeuralNetwork)
+pimaBag &lt;- doCV10by10(pimaDf, Bagging)
+pimaBoost &lt;- doCV10by10(pimaDf, AdaBoostM1)</code></pre>
+</div>
+<div id="metric-extraction-helper-function" class="section level3">
+<h3>Metric extraction helper function</h3>
+<p>This function extracts a given metric from the previous calculations, and displays it.</p>
+<pre class="r"><code>showMetric &lt;- function(i) {
+  mat &lt;- matrix(c(sonarJ48[i], hepatitisJ48[i], spectJ48[i],pimaJ48[i],
+                   sonarRF[i], hepatitisRF[i], spectRF[i],pimaRF[i],
+                   sonarSVM[i], hepatitisSVM[i], spectSVM[i],pimaSVM[i], 
+                   sonarNB[i], hepatitisNB[i], spectNB[i],pimaNB[i], 
+                   sonarBag[i], hepatitisBag[i], spectBag[i],pimaBag[i], 
+                   sonarBoost[i],hepatitisBoost[i],spectBoost[i],pimaBoost[i]),
+                 nrow = 4, ncol = 6)
+colnames(mat) &lt;- c(&quot;C4.5 DT&quot;, &quot;Random Forest&quot;, &quot;SVM&quot;, &quot;Naive Bayes&quot;, &quot;Bag&quot;, &quot;Boost&quot;)
+rownames(mat) &lt;- c(&quot;Sonar&quot;, &quot;Hepatitis&quot;, &quot;Spect&quot;, &quot;Pima&quot;)
+mat %&gt;% kable
+}</code></pre>
+</div>
+<div id="accuracies-comparison" class="section level3">
+<h3>Accuracies comparison</h3>
+<p>Now we extract the accuracy results from the above calculations</p>
+<pre class="r"><code>showMetric(1)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">C4.5 DT</th>
+<th align="right">Random Forest</th>
+<th align="right">SVM</th>
+<th align="right">Naive Bayes</th>
+<th align="right">Bag</th>
+<th align="right">Boost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Sonar</td>
+<td align="right">0.7350962</td>
+<td align="right">0.8403846</td>
+<td align="right">0.7716346</td>
+<td align="right">0.6817308</td>
+<td align="right">0.7625000</td>
+<td align="right">0.7543269</td>
+</tr>
+<tr class="even">
+<td align="left">Hepatitis</td>
+<td align="right">0.8316129</td>
+<td align="right">0.7987097</td>
+<td align="right">0.8038710</td>
+<td align="right">0.8264516</td>
+<td align="right">0.7722581</td>
+<td align="right">0.8129032</td>
+</tr>
+<tr class="odd">
+<td align="left">Spect</td>
+<td align="right">0.8082397</td>
+<td align="right">0.8198502</td>
+<td align="right">0.8280899</td>
+<td align="right">0.7617978</td>
+<td align="right">0.8307116</td>
+<td align="right">0.7876404</td>
+</tr>
+<tr class="even">
+<td align="left">Pima</td>
+<td align="right">0.7500000</td>
+<td align="right">0.7614583</td>
+<td align="right">0.7675781</td>
+<td align="right">0.7561198</td>
+<td align="right">0.7554687</td>
+<td align="right">0.7462240</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="precision-comparison" class="section level3">
+<h3>Precision comparison</h3>
+<p>Now we extract the precision results from the above calculations</p>
+<pre class="r"><code>showMetric(2)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">C4.5 DT</th>
+<th align="right">Random Forest</th>
+<th align="right">SVM</th>
+<th align="right">Naive Bayes</th>
+<th align="right">Bag</th>
+<th align="right">Boost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Sonar</td>
+<td align="right">0.7607871</td>
+<td align="right">0.8147698</td>
+<td align="right">0.7737956</td>
+<td align="right">0.7769311</td>
+<td align="right">0.7582561</td>
+<td align="right">0.7672551</td>
+</tr>
+<tr class="even">
+<td align="left">Hepatitis</td>
+<td align="right">0.6322187</td>
+<td align="right">0.6283333</td>
+<td align="right">0.5281136</td>
+<td align="right">0.5625104</td>
+<td align="right">0.2864683</td>
+<td align="right">0.5776561</td>
+</tr>
+<tr class="odd">
+<td align="left">Spect</td>
+<td align="right">0.5417531</td>
+<td align="right">0.5782256</td>
+<td align="right">0.5936659</td>
+<td align="right">0.4535030</td>
+<td align="right">0.6373032</td>
+<td align="right">0.4739596</td>
+</tr>
+<tr class="even">
+<td align="left">Pima</td>
+<td align="right">0.7941894</td>
+<td align="right">0.7996798</td>
+<td align="right">0.7805936</td>
+<td align="right">0.7971976</td>
+<td align="right">0.7942620</td>
+<td align="right">0.7846957</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="recall-comparison" class="section level3">
+<h3>Recall comparison</h3>
+<p>Now we extract the recall results from the above calculations</p>
+<pre class="r"><code>showMetric(3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">C4.5 DT</th>
+<th align="right">Random Forest</th>
+<th align="right">SVM</th>
+<th align="right">Naive Bayes</th>
+<th align="right">Bag</th>
+<th align="right">Boost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Sonar</td>
+<td align="right">0.7360360</td>
+<td align="right">0.9072072</td>
+<td align="right">0.8090090</td>
+<td align="right">0.5666667</td>
+<td align="right">0.8153153</td>
+<td align="right">0.7756757</td>
+</tr>
+<tr class="even">
+<td align="left">Hepatitis</td>
+<td align="right">0.4437500</td>
+<td align="right">0.0687500</td>
+<td align="right">0.5125000</td>
+<td align="right">0.7156250</td>
+<td align="right">0.0625000</td>
+<td align="right">0.3750000</td>
+</tr>
+<tr class="odd">
+<td align="left">Spect</td>
+<td align="right">0.4781818</td>
+<td align="right">0.4654545</td>
+<td align="right">0.5309091</td>
+<td align="right">0.7581818</td>
+<td align="right">0.4200000</td>
+<td align="right">0.2763636</td>
+</tr>
+<tr class="even">
+<td align="left">Pima</td>
+<td align="right">0.8316000</td>
+<td align="right">0.8454000</td>
+<td align="right">0.8944000</td>
+<td align="right">0.8388000</td>
+<td align="right">0.8428000</td>
+<td align="right">0.8410000</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="f1-comparison" class="section level3">
+<h3>F1 comparison</h3>
+<p>Now we extract the F1 results from the above calculations</p>
+<pre class="r"><code>showMetric(4)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">C4.5 DT</th>
+<th align="right">Random Forest</th>
+<th align="right">SVM</th>
+<th align="right">Naive Bayes</th>
+<th align="right">Bag</th>
+<th align="right">Boost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Sonar</td>
+<td align="right">0.7478789</td>
+<td align="right">0.8584344</td>
+<td align="right">0.7908279</td>
+<td align="right">0.6551756</td>
+<td align="right">0.7855247</td>
+<td align="right">0.7710681</td>
+</tr>
+<tr class="even">
+<td align="left">Hepatitis</td>
+<td align="right">0.5211805</td>
+<td align="right">0.1229366</td>
+<td align="right">0.5186139</td>
+<td align="right">0.6297066</td>
+<td align="right">0.1013676</td>
+<td align="right">0.4528701</td>
+</tr>
+<tr class="odd">
+<td align="left">Spect</td>
+<td align="right">0.5073201</td>
+<td align="right">0.5155569</td>
+<td align="right">0.5595296</td>
+<td align="right">0.5674666</td>
+<td align="right">0.5048366</td>
+<td align="right">0.3472704</td>
+</tr>
+<tr class="even">
+<td align="left">Pima</td>
+<td align="right">0.8123465</td>
+<td align="right">0.8218892</td>
+<td align="right">0.8336254</td>
+<td align="right">0.8174609</td>
+<td align="right">0.8177692</td>
+<td align="right">0.8118370</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
