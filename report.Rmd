@@ -53,6 +53,8 @@ tenFoldModel <- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
 tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 ```
 
+Now the evaluation metrics are significantly lower after the CV, but this is more realistic and reliable than the first approach which was too optimistic.
+
 ## Section 3 in assignment description
 In this section we will also train and test using 10-fold CV on the sonar dataset but with other classification algorithms. First we need to create interface functions for our desired Weka classifiers.
 ```{r}
@@ -95,7 +97,7 @@ tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 ```
 
 ### Bagging
-Now we will implement using the ensemble learning method, using Cart as the base classifier, again with stratified 10-fold CV.
+Now we will implement using Bagging, the ensemble learning method, again with stratified 10-fold CV.
 ```{r cache=TRUE, warning=FALSE}
 model <- Bagging(TargetOutput ~ ., data = sonarDf)
 #(model %>% summary)$confusionMatrix %>% getEvaluation %>% kable
@@ -111,6 +113,8 @@ model <- AdaBoostM1(TargetOutput ~ ., data = sonarDf)
 tenFoldModel <- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
 tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 ```
+
+We observe that Bagging and Boosting produce slightly better results than the base C4 classifier approach.
 
 ## Section 4 in assignment description
 Now we proceed to import other datasets, to test the multiple algorithms on them.
