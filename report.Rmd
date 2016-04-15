@@ -7,19 +7,10 @@ output: html_document
 
 # Attaching the required libraries
 ```{r message=FALSE}
-library(plyr)
 library(dplyr)
 library(knitr)
 library(tidyr)
-library(caret)
 library(RWeka)
-library(e1071)
-library(randomForest)
-library(kernlab)
-library(klaR)
-library(rpart)
-library(ipred)
-library(fastAdaboost)
 ```
 
 # Helper functions
@@ -52,11 +43,8 @@ names(sonarDf)[names(sonarDf)=="V61"] <- "TargetOutput"
 # Section 2 in assignment description (with a C4.5 decision tree)
 In this section we construct a C4.5 decision tree on the sonar dataset, using the entire dataset as the learning set, and showcase the different classification evaluation measures. We consider the metal class as the positive class.
 ```{r cache=TRUE}
-#sonarDTall <- J48(TargetOutput ~ ., data = sonarDf)
-sonarDTall <- train(TargetOutput ~ ., data=sonarDf, method="J48")
-#sonarDTall %>% getEvaluation("model") %>% kable
-predictions <- predict(sonarDTall, sonarDf[,1:60])
-confusionMatrix(predictions, sonarDf[,61]) %>% getEvaluation %>% kable
+model <- J48(TargetOutput ~ ., data = sonarDf)
+model %>% confusionMatric %>% getEvaluation %>% kable
 ```
 
 We should note that the above measures are not reliable since training and testing were done on the same dataset, which should never be done due to overfitting. To avoid this problem, we will use stratified 10-fold cross-validation.
@@ -153,4 +141,17 @@ Here the class attribute is the ninth attribute, as stated in `pima-indians-diab
 pimaDf <- read.csv('datasets/pima-indians-diabetes.data', header = FALSE)
 names(pimaDf)[names(pimaDf)=="V9"] <- "TargetOutput"
 pimaDf <- pimaDf  %>% mutate(TargetOutput = as.factor(TargetOutput))
+```
+
+### Results of 10 times 10 CV for each dataset & algorithm pair
+The function `doCV10by10` takes a dataframe and an algorithm as input and performs 10 by 10 CV, then outputs our required evaluation metrics.
+```{r}
+doCV10by10 <- function(df,algorithm) {
+  tenByTenCVControl <- trainControl(method = "repeatedcv", number = 10, repeats = 10)
+  model <- train(TargetOutput ~ ., data=df, method=algorithm,trControl=tenByTenCVControl)
+model %>% confusionMatrix %>% getEvaluation %>% kable
+}
+```
+```{r}
+#doCV10by10(hepatitisDf,"rf")
 ```

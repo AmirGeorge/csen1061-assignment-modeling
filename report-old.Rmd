@@ -1,0 +1,169 @@
+---
+title: "Assignment1-DataScience"
+author: "Amir George"
+date: "April 14, 2016"
+output: html_document
+---
+
+# Attaching the required libraries
+```{r message=FALSE}
+library(plyr)
+library(dplyr)
+library(knitr)
+library(tidyr)
+library(caret)
+library(RWeka)
+library(e1071)
+library(randomForest)
+library(kernlab)
+library(klaR)
+library(rpart)
+library(ipred)
+library(fastAdaboost)
+```
+
+# Helper functions
+Here we define helper functions that will be repeatedly used throughout the assignment.
+## `getEvaluation` function
+The function `getEvaluation` extracts the required classification evaluation measures from a given confusion matrix.
+```{r}
+getEvaluation <- function(confMat) {
+  tp <- confMat$table[1,1]
+  fn <- confMat$table[1, 2]
+  fp <- confMat$table[2, 1]
+  tn <- confMat$table[2, 2]
+  Accurary <- (tp + tn) / (tp + fn + fp + tn)
+  Precision <- tp / (tp + fp)
+  Recall <- tp / (tp + fn)
+  F1 <- (2 * Precision * Recall) / (Precision + Recall)
+  res <- cbind(Accurary,Precision,Recall,F1)
+  return(res)
+}
+```
+
+# Reading the sonar dataset
+We read the whole dataset, and give the target output column a clear name.
+```{r cache=TRUE}
+#sonarDf <- read.csv('C:/Users/Amir George/Rworkspace/Assignment1-DataScience/csen1061-assignment-modeling/datasets/sonar.data', header = FALSE)
+sonarDf <- read.csv('datasets/sonar.data', header = FALSE)
+names(sonarDf)[names(sonarDf)=="V61"] <- "TargetOutput"
+```
+
+# Section 2 in assignment description (with a C4.5 decision tree)
+In this section we construct a C4.5 decision tree on the sonar dataset, using the entire dataset as the learning set, and showcase the different classification evaluation measures. We consider the metal class as the positive class.
+```{r cache=TRUE}
+#sonarDTall <- J48(TargetOutput ~ ., data = sonarDf)
+sonarDTall <- train(TargetOutput ~ ., data=sonarDf, method="J48")
+#sonarDTall %>% getEvaluation("model") %>% kable
+predictions <- predict(sonarDTall, sonarDf[,1:60])
+confusionMatrix(predictions, sonarDf[,61]) %>% getEvaluation %>% kable
+```
+
+We should note that the above measures are not reliable since training and testing were done on the same dataset, which should never be done due to overfitting. To avoid this problem, we will use stratified 10-fold cross-validation.
+```{r cache=TRUE}
+tenFoldCVControl <- trainControl(method = "cv", number = 10)
+sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="J48",trControl=tenFoldCVControl)
+sonarDTtenFoldCV %>% confusionMatrix %>% getEvaluation %>% kable
+```
+
+# Section 2 in assignment description (with a Cart decision tree)
+Training and testing on the same whole dataset:
+```{r cache=TRUE}
+sonarDTall <- train(TargetOutput ~ ., data=sonarDf, method="rpart")
+predictions <- predict(sonarDTall, sonarDf[,1:60])
+confusionMatrix(predictions, sonarDf[,61]) %>% getEvaluation %>% kable
+```
+
+Using stratified 10-fold cross-validation:
+```{r cache=TRUE}
+tenFoldCVControl <- trainControl(method = "cv", number = 10)
+sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="rpart",trControl=tenFoldCVControl)
+sonarDTtenFoldCV %>% confusionMatrix %>% getEvaluation %>% kable
+```
+
+## Section 3 in assignment description
+In this section we will also train and test using 10-fold CV on the sonar dataset but with other classification algorithms.
+
+### Random Forest
+```{r cache=TRUE}
+sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="rf",trControl=tenFoldCVControl)
+sonarDTtenFoldCV %>% confusionMatrix %>% getEvaluation %>% kable
+```
+
+###Support Vector Machines (SVM)
+Out of all the SVM methods offered by the caret package, we chose the `svmRadial` method.
+```{r cache=TRUE}
+sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="svmRadial",trControl=tenFoldCVControl)
+sonarDTtenFoldCV %>% confusionMatrix  %>% getEvaluation %>% kable
+```
+
+### Naive Bayes
+```{r cache=TRUE, warning=FALSE}
+sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="nb",trControl=tenFoldCVControl)
+sonarDTtenFoldCV %>% confusionMatrix  %>% getEvaluation %>% kable
+```
+
+### Neural Networks
+```{r cache=TRUE, message=FALSE, results = "hide"}
+sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="nnet",trControl=tenFoldCVControl)
+```
+```{r cache=TRUE}
+sonarDTtenFoldCV %>% confusionMatrix  %>% getEvaluation %>% kable
+```
+
+### Bagging
+Now we will implement using the ensemble learning method, using Cart as the base classifier, again with stratified 10-fold CV.
+```{r cache=TRUE, warning=FALSE}
+sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="treebag",trControl=tenFoldCVControl)
+sonarDTtenFoldCV %>% confusionMatrix  %>% getEvaluation %>% kable
+```
+
+### Boosting
+Now we will implement using Adaboost, again with stratified 10-fold CV.
+```{r cache=TRUE}
+sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="adaboost",trControl=tenFoldCVControl)
+sonarDTtenFoldCV %>% confusionMatrix  %>% getEvaluation %>% kable
+```
+
+## Section 4 in assignment description
+Now we proceed to import other datasets, to test the multiple algorithms on them.
+
+### Importing Hepatitis dataset
+Here the class attribute is the first attribute, as stated in `hepatitis.names` on the UCI repository.
+```{r cache=TRUE}
+#hepatitisDf <- read.csv('C:/Users/Amir George/Rworkspace/Assignment1-DataScience/csen1061-assignment-modeling/datasets/hepatitis.data', header = FALSE)
+hepatitisDf <- read.csv('datasets/hepatitis.data', header = FALSE)
+names(hepatitisDf)[names(hepatitisDf)=="V1"] <- "TargetOutput"
+hepatitisDf <- hepatitisDf  %>% mutate(TargetOutput = as.factor(TargetOutput))
+```
+
+### Importing Spect dataset
+Here the class attribute is the first attribute, as stated in `SPECT.names` on the UCI repository.
+```{r cache=TRUE}
+#spectDf <- read.csv('C:/Users/Amir George/Rworkspace/Assignment1-DataScience/csen1061-assignment-modeling/datasets/SPECT.data', header = FALSE)
+spectDf <- read.csv('datasets/SPECT.data', header = FALSE)
+names(spectDf)[names(spectDf)=="V1"] <- "TargetOutput"
+spectDf <- spectDf  %>% mutate(TargetOutput = as.factor(TargetOutput))
+```
+
+### Importing Pima-indians dataset
+Here the class attribute is the ninth attribute, as stated in `pima-indians-diabetes.names` on the UCI repository.
+```{r cache=TRUE}
+#pimaDf <- read.csv('C:/Users/Amir George/Rworkspace/Assignment1-DataScience/csen1061-assignment-modeling/datasets/pima-indians-diabetes.data', header = FALSE)
+pimaDf <- read.csv('datasets/pima-indians-diabetes.data', header = FALSE)
+names(pimaDf)[names(pimaDf)=="V9"] <- "TargetOutput"
+pimaDf <- pimaDf  %>% mutate(TargetOutput = as.factor(TargetOutput))
+```
+
+### Results of 10 times 10 CV for each dataset & algorithm pair
+The function `doCV10by10` takes a dataframe and an algorithm as input and performs 10 by 10 CV, then outputs our required evaluation metrics.
+```{r}
+doCV10by10 <- function(df,algorithm) {
+  tenByTenCVControl <- trainControl(method = "repeatedcv", number = 10, repeats = 10)
+  model <- train(TargetOutput ~ ., data=df, method=algorithm,trControl=tenByTenCVControl)
+model %>% confusionMatrix %>% getEvaluation %>% kable
+}
+```
+```{r}
+#doCV10by10(hepatitisDf,"rf")
+```
