@@ -306,7 +306,7 @@ tenFoldModel$confusionMatrix %&gt;% getEvaluation %&gt;% kable</code></pre>
 <div id="bagging" class="section level2">
 <h2>Bagging</h2>
 <p>Now we will implement using Bagging, the ensemble learning method, again with stratified 10-fold CV.</p>
-<pre class="r"><code>model &lt;- Bagging(TargetOutput ~ ., data = sonarDf)
+<pre class="r"><code>model &lt;- Bagging(TargetOutput ~ ., data = sonarDf, control = Weka_control(W=&quot;J48&quot;))
 #(model %&gt;% summary)$confusionMatrix %&gt;% getEvaluation %&gt;% kable
 tenFoldModel &lt;- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
 tenFoldModel$confusionMatrix %&gt;% getEvaluation %&gt;% kable</code></pre>
@@ -321,10 +321,10 @@ tenFoldModel$confusionMatrix %&gt;% getEvaluation %&gt;% kable</code></pre>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">0.7644231</td>
-<td align="right">0.7672414</td>
-<td align="right">0.8018018</td>
-<td align="right">0.784141</td>
+<td align="right">0.7740385</td>
+<td align="right">0.7666667</td>
+<td align="right">0.8288288</td>
+<td align="right">0.7965368</td>
 </tr>
 </tbody>
 </table>
@@ -393,6 +393,10 @@ pimaDf &lt;- pimaDf  %&gt;% mutate(TargetOutput = as.factor(TargetOutput))</code
 <pre class="r"><code>doCV10by10 &lt;- function(df,algorithm) {
   randSeeds &lt;- c(100, 458, 2532, 324, 7655, 987, 723, 247, 956, 3421)
   model &lt;- algorithm(TargetOutput ~ ., data = df)
+  if (as.character(substitute(algorithm))==&quot;Bagging&quot;) {
+    model &lt;- algorithm(TargetOutput ~ ., data = df, control =
+                         Weka_control(W=&quot;J48&quot;))
+  }
   res &lt;- c(0,0,0,0)
   for (s in randSeeds) {
     tenFoldModel &lt;- evaluate_Weka_classifier(model, numFolds = 10, seed = s)
@@ -481,7 +485,7 @@ accMetric %&gt;% kable</code></pre>
 <td align="right">0.8403846</td>
 <td align="right">0.7716346</td>
 <td align="right">0.6817308</td>
-<td align="right">0.7625000</td>
+<td align="right">0.7807692</td>
 <td align="right">0.7543269</td>
 </tr>
 <tr class="even">
@@ -490,7 +494,7 @@ accMetric %&gt;% kable</code></pre>
 <td align="right">0.7987097</td>
 <td align="right">0.8038710</td>
 <td align="right">0.8264516</td>
-<td align="right">0.7722581</td>
+<td align="right">0.8167742</td>
 <td align="right">0.8129032</td>
 </tr>
 <tr class="odd">
@@ -499,7 +503,7 @@ accMetric %&gt;% kable</code></pre>
 <td align="right">0.8198502</td>
 <td align="right">0.8280899</td>
 <td align="right">0.7617978</td>
-<td align="right">0.8307116</td>
+<td align="right">0.8250936</td>
 <td align="right">0.7876404</td>
 </tr>
 <tr class="even">
@@ -508,7 +512,7 @@ accMetric %&gt;% kable</code></pre>
 <td align="right">0.7614583</td>
 <td align="right">0.7675781</td>
 <td align="right">0.7561198</td>
-<td align="right">0.7554687</td>
+<td align="right">0.7528646</td>
 <td align="right">0.7462240</td>
 </tr>
 </tbody>
@@ -538,7 +542,7 @@ preMetric %&gt;% kable</code></pre>
 <td align="right">0.8147698</td>
 <td align="right">0.7737956</td>
 <td align="right">0.7769311</td>
-<td align="right">0.7582561</td>
+<td align="right">0.7707284</td>
 <td align="right">0.7672551</td>
 </tr>
 <tr class="even">
@@ -547,7 +551,7 @@ preMetric %&gt;% kable</code></pre>
 <td align="right">0.6283333</td>
 <td align="right">0.5281136</td>
 <td align="right">0.5625104</td>
-<td align="right">0.2864683</td>
+<td align="right">0.6003379</td>
 <td align="right">0.5776561</td>
 </tr>
 <tr class="odd">
@@ -556,7 +560,7 @@ preMetric %&gt;% kable</code></pre>
 <td align="right">0.5782256</td>
 <td align="right">0.5936659</td>
 <td align="right">0.4535030</td>
-<td align="right">0.6373032</td>
+<td align="right">0.6007769</td>
 <td align="right">0.4739596</td>
 </tr>
 <tr class="even">
@@ -565,7 +569,7 @@ preMetric %&gt;% kable</code></pre>
 <td align="right">0.7996798</td>
 <td align="right">0.7805936</td>
 <td align="right">0.7971976</td>
-<td align="right">0.7942620</td>
+<td align="right">0.7924868</td>
 <td align="right">0.7846957</td>
 </tr>
 </tbody>
@@ -595,7 +599,7 @@ recMetric %&gt;% kable</code></pre>
 <td align="right">0.9072072</td>
 <td align="right">0.8090090</td>
 <td align="right">0.5666667</td>
-<td align="right">0.8153153</td>
+<td align="right">0.8405405</td>
 <td align="right">0.7756757</td>
 </tr>
 <tr class="even">
@@ -604,7 +608,7 @@ recMetric %&gt;% kable</code></pre>
 <td align="right">0.0687500</td>
 <td align="right">0.5125000</td>
 <td align="right">0.7156250</td>
-<td align="right">0.0625000</td>
+<td align="right">0.3406250</td>
 <td align="right">0.3750000</td>
 </tr>
 <tr class="odd">
@@ -613,7 +617,7 @@ recMetric %&gt;% kable</code></pre>
 <td align="right">0.4654545</td>
 <td align="right">0.5309091</td>
 <td align="right">0.7581818</td>
-<td align="right">0.4200000</td>
+<td align="right">0.4545455</td>
 <td align="right">0.2763636</td>
 </tr>
 <tr class="even">
@@ -622,7 +626,7 @@ recMetric %&gt;% kable</code></pre>
 <td align="right">0.8454000</td>
 <td align="right">0.8944000</td>
 <td align="right">0.8388000</td>
-<td align="right">0.8428000</td>
+<td align="right">0.8408000</td>
 <td align="right">0.8410000</td>
 </tr>
 </tbody>
@@ -652,7 +656,7 @@ f1Metric %&gt;% kable</code></pre>
 <td align="right">0.8584344</td>
 <td align="right">0.7908279</td>
 <td align="right">0.6551756</td>
-<td align="right">0.7855247</td>
+<td align="right">0.8038265</td>
 <td align="right">0.7710681</td>
 </tr>
 <tr class="even">
@@ -661,7 +665,7 @@ f1Metric %&gt;% kable</code></pre>
 <td align="right">0.1229366</td>
 <td align="right">0.5186139</td>
 <td align="right">0.6297066</td>
-<td align="right">0.1013676</td>
+<td align="right">0.4333404</td>
 <td align="right">0.4528701</td>
 </tr>
 <tr class="odd">
@@ -670,7 +674,7 @@ f1Metric %&gt;% kable</code></pre>
 <td align="right">0.5155569</td>
 <td align="right">0.5595296</td>
 <td align="right">0.5674666</td>
-<td align="right">0.5048366</td>
+<td align="right">0.5170988</td>
 <td align="right">0.3472704</td>
 </tr>
 <tr class="even">
@@ -679,7 +683,7 @@ f1Metric %&gt;% kable</code></pre>
 <td align="right">0.8218892</td>
 <td align="right">0.8336254</td>
 <td align="right">0.8174609</td>
-<td align="right">0.8177692</td>
+<td align="right">0.8158344</td>
 <td align="right">0.8118370</td>
 </tr>
 </tbody>
@@ -749,18 +753,18 @@ accSig %&gt;% kable</code></pre>
 <td align="left">t= -0.820262331377715 ,p= 0.472171388170233</td>
 <td align="left">t= -0.839571206982726 ,p= 0.462783052011644</td>
 <td align="left">t= 1.67052036049621 ,p= 0.193409297644341</td>
-<td align="left">t= 0.0501038962829949 ,p= 0.963188897290378</td>
+<td align="left">t= -0.988997290376036 ,p= 0.395576877153748</td>
 <td align="left">t= 0.648044061288431 ,p= 0.563133712468723</td>
 <td align="left">t= 0.653766825205269 ,p= 0.559903643059947</td>
 <td align="left">t= 1.19281798750077 ,p= 0.318681795745793</td>
-<td align="left">t= 1.29181711635349 ,p= 0.286939933745563</td>
+<td align="left">t= 0.659395704814145 ,p= 0.556740292604105</td>
 <td align="left">t= 1.41681724647933 ,p= 0.251527476922189</td>
 <td align="left">t= 1.4174006890623 ,p= 0.251373580976029</td>
-<td align="left">t= 1.76809281265845 ,p= 0.175202381392794</td>
+<td align="left">t= -0.172759646722749 ,p= 0.873838309834904</td>
 <td align="left">t= 1.71965813254902 ,p= 0.183983966868559</td>
-<td align="left">t= -0.750967683262715 ,p= 0.507210338032468</td>
+<td align="left">t= -1.41686608706363 ,p= 0.251514590234908</td>
 <td align="left">t= -0.936118921300444 ,p= 0.41826905944283</td>
-<td align="left">t= 0.287986764685271 ,p= 0.79210655078253</td>
+<td align="left">t= 2.31184155523242 ,p= 0.103855849354529</td>
 </tr>
 </tbody>
 </table>
@@ -794,18 +798,18 @@ preSig %&gt;% kable</code></pre>
 <td align="left">t= -1.71115203040595 ,p= 0.185577529734324</td>
 <td align="left">t= 0.397986028242137 ,p= 0.717270187980655</td>
 <td align="left">t= 1.33564405466428 ,p= 0.273956148816188</td>
-<td align="left">t= 0.651723937225285 ,p= 0.561055085973181</td>
+<td align="left">t= -0.467879456317485 ,p= 0.67176352085126</td>
 <td align="left">t= 1.76731966708928 ,p= 0.175338736541267</td>
 <td align="left">t= 1.49064487796205 ,p= 0.232841459360692</td>
 <td align="left">t= 2.23514507181828 ,p= 0.11146260856072</td>
-<td align="left">t= 0.974351705197828 ,p= 0.401744279758593</td>
+<td align="left">t= 0.985538005644045 ,p= 0.397025549834115</td>
 <td align="left">t= 2.9403770652149 ,p= 0.0604917997241049</td>
 <td align="left">t= 0.536769132075187 ,p= 0.628681055016702</td>
-<td align="left">t= 0.768484941360316 ,p= 0.498153525978313</td>
+<td align="left">t= -1.29524695078742 ,p= 0.285900894478133</td>
 <td align="left">t= 0.504605409031525 ,p= 0.648567406875693</td>
-<td align="left">t= 0.301288287361081 ,p= 0.782870852084012</td>
+<td align="left">t= -1.20793708714198 ,p= 0.313609807356928</td>
 <td align="left">t= -0.398119937318978 ,p= 0.717181379374176</td>
-<td align="left">t= -0.33603624809972 ,p= 0.758973910175985</td>
+<td align="left">t= 1.37795373136044 ,p= 0.262010404753095</td>
 </tr>
 </tbody>
 </table>
@@ -839,18 +843,18 @@ recSig %&gt;% kable</code></pre>
 <td align="left">t= 0.438980544475833 ,p= 0.690369115963609</td>
 <td align="left">t= -14.6518407769167 ,p= 0.000689539034065426</td>
 <td align="left">t= -0.892212714992372 ,p= 0.438013280976581</td>
-<td align="left">t= 0.855764823167356 ,p= 0.455035018467302</td>
+<td align="left">t= 0.0759656500811721 ,p= 0.94422874480293</td>
 <td align="left">t= 1.02771076180652 ,p= 0.379701922274973</td>
 <td align="left">t= -0.994884011342442 ,p= 0.393123079128161</td>
 <td align="left">t= -0.703191906803317 ,p= 0.532595449323238</td>
-<td align="left">t= 1.75362086661392 ,p= 0.177775006679348</td>
+<td align="left">t= -0.623147380080255 ,p= 0.57734898448022</td>
 <td align="left">t= 0.0424349306078592 ,p= 0.968818338037403</td>
 <td align="left">t= -0.295836547096179 ,p= 0.786650501648033</td>
-<td align="left">t= 1.48114374429294 ,p= 0.235159105407324</td>
+<td align="left">t= 1.61642817978249 ,p= 0.204421943795458</td>
 <td align="left">t= 2.37985346207323 ,p= 0.0976307532875706</td>
-<td align="left">t= 0.936710515173724 ,p= 0.418008652458428</td>
+<td align="left">t= 0.674682169711207 ,p= 0.548218432577428</td>
 <td align="left">t= 0.96893305035741 ,p= 0.404048852022425</td>
-<td align="left">t= -0.324281364676108 ,p= 0.767019631599147</td>
+<td align="left">t= 1.11384479951295 ,p= 0.346552565017893</td>
 </tr>
 </tbody>
 </table>
@@ -884,18 +888,18 @@ f1Sig %&gt;% kable</code></pre>
 <td align="left">t= 0.598043599390209 ,p= 0.591948501358942</td>
 <td align="left">t= -2.33204397538412 ,p= 0.101957681042195</td>
 <td align="left">t= -0.469476069634626 ,p= 0.670744525972196</td>
-<td align="left">t= 0.872330587482536 ,p= 0.447227107410577</td>
+<td align="left">t= 0.154734799393031 ,p= 0.88685453384362</td>
 <td align="left">t= 1.25191217889628 ,p= 0.299322368650091</td>
 <td align="left">t= -0.934914753181627 ,p= 0.418799568424124</td>
 <td align="left">t= -0.584938654802425 ,p= 0.599674809690723</td>
-<td align="left">t= 1.75042299683904 ,p= 0.17834930245467</td>
+<td align="left">t= -0.752709631919741 ,p= 0.506303677728492</td>
 <td align="left">t= -0.146642307663844 ,p= 0.89271430495481</td>
 <td align="left">t= 0.161795597430831 ,p= 0.881749717142137</td>
-<td align="left">t= 1.25070448222277 ,p= 0.299705653234159</td>
+<td align="left">t= 1.59606127222967 ,p= 0.20874962038574</td>
 <td align="left">t= 1.76038168291988 ,p= 0.176567810054719</td>
-<td align="left">t= 0.801974063536951 ,p= 0.481214094316312</td>
+<td align="left">t= 0.350456886321795 ,p= 0.749159342551481</td>
 <td align="left">t= 0.921302846250133 ,p= 0.424839412464554</td>
-<td align="left">t= -0.40012176657409 ,p= 0.715854480170743</td>
+<td align="left">t= 1.10312722521076 ,p= 0.350517789173713</td>
 </tr>
 </tbody>
 </table>

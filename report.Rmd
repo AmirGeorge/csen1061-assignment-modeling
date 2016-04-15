@@ -100,7 +100,7 @@ tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 ## Bagging
 Now we will implement using Bagging, the ensemble learning method, again with stratified 10-fold CV.
 ```{r cache=TRUE, warning=FALSE}
-model <- Bagging(TargetOutput ~ ., data = sonarDf)
+model <- Bagging(TargetOutput ~ ., data = sonarDf, control = Weka_control(W="J48"))
 #(model %>% summary)$confusionMatrix %>% getEvaluation %>% kable
 tenFoldModel <- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
 tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
@@ -155,6 +155,10 @@ This function takes as input a dataframe and an algorithm and does stratified 10
 doCV10by10 <- function(df,algorithm) {
   randSeeds <- c(100, 458, 2532, 324, 7655, 987, 723, 247, 956, 3421)
   model <- algorithm(TargetOutput ~ ., data = df)
+  if (as.character(substitute(algorithm))=="Bagging") {
+    model <- algorithm(TargetOutput ~ ., data = df, control =
+                         Weka_control(W="J48"))
+  }
   res <- c(0,0,0,0)
   for (s in randSeeds) {
     tenFoldModel <- evaluate_Weka_classifier(model, numFolds = 10, seed = s)
