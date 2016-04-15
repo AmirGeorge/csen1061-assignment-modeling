@@ -19,10 +19,10 @@ Here we define helper functions that will be repeatedly used throughout the assi
 The function `getEvaluation` extracts the required classification evaluation measures from a given confusion matrix.
 ```{r}
 getEvaluation <- function(confMat) {
-  tp <- confMat$table[1,1]
-  fn <- confMat$table[1, 2]
-  fp <- confMat$table[2, 1]
-  tn <- confMat$table[2, 2]
+  tp <- confMat[1,1]
+  fn <- confMat[1, 2]
+  fp <- confMat[2, 1]
+  tn <- confMat[2, 2]
   Accurary <- (tp + tn) / (tp + fn + fp + tn)
   Precision <- tp / (tp + fp)
   Recall <- tp / (tp + fn)
@@ -44,73 +44,72 @@ names(sonarDf)[names(sonarDf)=="V61"] <- "TargetOutput"
 In this section we construct a C4.5 decision tree on the sonar dataset, using the entire dataset as the learning set, and showcase the different classification evaluation measures. We consider the metal class as the positive class.
 ```{r cache=TRUE}
 model <- J48(TargetOutput ~ ., data = sonarDf)
-model %>% confusionMatric %>% getEvaluation %>% kable
+(model %>% summary)$confusionMatrix %>% getEvaluation %>% kable
 ```
 
 We should note that the above measures are not reliable since training and testing were done on the same dataset, which should never be done due to overfitting. To avoid this problem, we will use stratified 10-fold cross-validation.
 ```{r cache=TRUE}
-tenFoldCVControl <- trainControl(method = "cv", number = 10)
-sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="J48",trControl=tenFoldCVControl)
-sonarDTtenFoldCV %>% confusionMatrix %>% getEvaluation %>% kable
-```
-
-# Section 2 in assignment description (with a Cart decision tree)
-Training and testing on the same whole dataset:
-```{r cache=TRUE}
-sonarDTall <- train(TargetOutput ~ ., data=sonarDf, method="rpart")
-predictions <- predict(sonarDTall, sonarDf[,1:60])
-confusionMatrix(predictions, sonarDf[,61]) %>% getEvaluation %>% kable
-```
-
-Using stratified 10-fold cross-validation:
-```{r cache=TRUE}
-tenFoldCVControl <- trainControl(method = "cv", number = 10)
-sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="rpart",trControl=tenFoldCVControl)
-sonarDTtenFoldCV %>% confusionMatrix %>% getEvaluation %>% kable
+tenFoldModel <- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
+tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 ```
 
 ## Section 3 in assignment description
-In this section we will also train and test using 10-fold CV on the sonar dataset but with other classification algorithms.
+In this section we will also train and test using 10-fold CV on the sonar dataset but with other classification algorithms. First we need to create interface functions for our desired Weka classifiers.
+```{r}
+RandomForest <- make_Weka_classifier("weka/classifiers/trees/RandomForest")
+NaiveBayes <- make_Weka_classifier("weka/classifiers/bayes/NaiveBayes")
+NeuralNetwork <- make_Weka_classifier("weka/classifiers/functions/MultilayerPerceptron")
+```
 
 ### Random Forest
 ```{r cache=TRUE}
-sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="rf",trControl=tenFoldCVControl)
-sonarDTtenFoldCV %>% confusionMatrix %>% getEvaluation %>% kable
+model <- RandomForest(TargetOutput ~ ., data = sonarDf)
+#(model %>% summary)$confusionMatrix %>% getEvaluation %>% kable
+tenFoldModel <- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
+tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 ```
 
 ###Support Vector Machines (SVM)
 Out of all the SVM methods offered by the caret package, we chose the `svmRadial` method.
 ```{r cache=TRUE}
-sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="svmRadial",trControl=tenFoldCVControl)
-sonarDTtenFoldCV %>% confusionMatrix  %>% getEvaluation %>% kable
+model <- SMO(TargetOutput ~ ., data = sonarDf)
+#(model %>% summary)$confusionMatrix %>% getEvaluation %>% kable
+tenFoldModel <- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
+tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 ```
 
 ### Naive Bayes
 ```{r cache=TRUE, warning=FALSE}
-sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="nb",trControl=tenFoldCVControl)
-sonarDTtenFoldCV %>% confusionMatrix  %>% getEvaluation %>% kable
+model <- NaiveBayes(TargetOutput ~ ., data = sonarDf)
+#(model %>% summary)$confusionMatrix %>% getEvaluation %>% kable
+tenFoldModel <- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
+tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 ```
 
 ### Neural Networks
-```{r cache=TRUE, message=FALSE, results = "hide"}
-sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="nnet",trControl=tenFoldCVControl)
-```
 ```{r cache=TRUE}
-sonarDTtenFoldCV %>% confusionMatrix  %>% getEvaluation %>% kable
+model <- NeuralNetwork(TargetOutput ~ ., data = sonarDf)
+#(model %>% summary)$confusionMatrix %>% getEvaluation %>% kable
+tenFoldModel <- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
+tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 ```
 
 ### Bagging
 Now we will implement using the ensemble learning method, using Cart as the base classifier, again with stratified 10-fold CV.
 ```{r cache=TRUE, warning=FALSE}
-sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="treebag",trControl=tenFoldCVControl)
-sonarDTtenFoldCV %>% confusionMatrix  %>% getEvaluation %>% kable
+model <- Bagging(TargetOutput ~ ., data = sonarDf)
+#(model %>% summary)$confusionMatrix %>% getEvaluation %>% kable
+tenFoldModel <- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
+tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 ```
 
 ### Boosting
 Now we will implement using Adaboost, again with stratified 10-fold CV.
 ```{r cache=TRUE}
-sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="adaboost",trControl=tenFoldCVControl)
-sonarDTtenFoldCV %>% confusionMatrix  %>% getEvaluation %>% kable
+model <- AdaBoostM1(TargetOutput ~ ., data = sonarDf)
+#(model %>% summary)$confusionMatrix %>% getEvaluation %>% kable
+tenFoldModel <- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
+tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 ```
 
 ## Section 4 in assignment description
@@ -143,15 +142,3 @@ names(pimaDf)[names(pimaDf)=="V9"] <- "TargetOutput"
 pimaDf <- pimaDf  %>% mutate(TargetOutput = as.factor(TargetOutput))
 ```
 
-### Results of 10 times 10 CV for each dataset & algorithm pair
-The function `doCV10by10` takes a dataframe and an algorithm as input and performs 10 by 10 CV, then outputs our required evaluation metrics.
-```{r}
-doCV10by10 <- function(df,algorithm) {
-  tenByTenCVControl <- trainControl(method = "repeatedcv", number = 10, repeats = 10)
-  model <- train(TargetOutput ~ ., data=df, method=algorithm,trControl=tenByTenCVControl)
-model %>% confusionMatrix %>% getEvaluation %>% kable
-}
-```
-```{r}
-#doCV10by10(hepatitisDf,"rf")
-```
