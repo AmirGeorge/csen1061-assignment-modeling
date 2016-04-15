@@ -125,7 +125,10 @@ library(RWeka)</code></pre>
 </div>
 <div id="helper-functions" class="section level1">
 <h1>Helper functions</h1>
-<p>Here we define helper functions that will be repeatedly used throughout the assignment. ## <code>getEvaluation</code> function The function <code>getEvaluation</code> extracts the required classification evaluation measures from a given confusion matrix.</p>
+<p>Here we define helper functions that will be repeatedly used throughout the assignment.</p>
+<div id="getevaluation-function" class="section level2">
+<h2><code>getEvaluation</code> function</h2>
+<p>The function <code>getEvaluation</code> extracts the required classification evaluation measures from a given confusion matrix.</p>
 <pre class="r"><code>getEvaluation &lt;- function(confMat) {
   tp &lt;- confMat[1,1]
   fn &lt;- confMat[1, 2]
@@ -138,6 +141,7 @@ library(RWeka)</code></pre>
   res &lt;- cbind(Accurary,Precision,Recall,F1)
   return(res)
 }</code></pre>
+</div>
 </div>
 <div id="reading-the-sonar-dataset" class="section level1">
 <h1>Reading the sonar dataset</h1>
@@ -191,14 +195,15 @@ tenFoldModel$confusionMatrix %&gt;% getEvaluation %&gt;% kable</code></pre>
 </tbody>
 </table>
 <p>Now the evaluation metrics are significantly lower after the CV, but this is more realistic and reliable than the first approach which was too optimistic.</p>
-<div id="section-3-in-assignment-description" class="section level2">
-<h2>Section 3 in assignment description</h2>
+</div>
+<div id="section-3-in-assignment-description" class="section level1">
+<h1>Section 3 in assignment description</h1>
 <p>In this section we will also train and test using 10-fold CV on the sonar dataset but with other classification algorithms. First we need to create interface functions for our desired Weka classifiers.</p>
 <pre class="r"><code>RandomForest &lt;- make_Weka_classifier(&quot;weka/classifiers/trees/RandomForest&quot;)
 NaiveBayes &lt;- make_Weka_classifier(&quot;weka/classifiers/bayes/NaiveBayes&quot;)
 NeuralNetwork &lt;- make_Weka_classifier(&quot;weka/classifiers/functions/MultilayerPerceptron&quot;)</code></pre>
-<div id="random-forest" class="section level3">
-<h3>Random Forest</h3>
+<div id="random-forest" class="section level2">
+<h2>Random Forest</h2>
 <pre class="r"><code>model &lt;- RandomForest(TargetOutput ~ ., data = sonarDf)
 #(model %&gt;% summary)$confusionMatrix %&gt;% getEvaluation %&gt;% kable
 tenFoldModel &lt;- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
@@ -222,8 +227,8 @@ tenFoldModel$confusionMatrix %&gt;% getEvaluation %&gt;% kable</code></pre>
 </tbody>
 </table>
 </div>
-<div id="support-vector-machines-svm" class="section level3">
-<h3>Support Vector Machines (SVM)</h3>
+<div id="support-vector-machines-svm" class="section level2">
+<h2>Support Vector Machines (SVM)</h2>
 <p>Out of all the SVM methods offered by the caret package, we chose the <code>svmRadial</code> method.</p>
 <pre class="r"><code>model &lt;- SMO(TargetOutput ~ ., data = sonarDf)
 #(model %&gt;% summary)$confusionMatrix %&gt;% getEvaluation %&gt;% kable
@@ -248,8 +253,8 @@ tenFoldModel$confusionMatrix %&gt;% getEvaluation %&gt;% kable</code></pre>
 </tbody>
 </table>
 </div>
-<div id="naive-bayes" class="section level3">
-<h3>Naive Bayes</h3>
+<div id="naive-bayes" class="section level2">
+<h2>Naive Bayes</h2>
 <pre class="r"><code>model &lt;- NaiveBayes(TargetOutput ~ ., data = sonarDf)
 #(model %&gt;% summary)$confusionMatrix %&gt;% getEvaluation %&gt;% kable
 tenFoldModel &lt;- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
@@ -273,8 +278,8 @@ tenFoldModel$confusionMatrix %&gt;% getEvaluation %&gt;% kable</code></pre>
 </tbody>
 </table>
 </div>
-<div id="neural-networks" class="section level3">
-<h3>Neural Networks</h3>
+<div id="neural-networks" class="section level2">
+<h2>Neural Networks</h2>
 <pre class="r"><code>model &lt;- NeuralNetwork(TargetOutput ~ ., data = sonarDf)
 #(model %&gt;% summary)$confusionMatrix %&gt;% getEvaluation %&gt;% kable
 tenFoldModel &lt;- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
@@ -298,9 +303,9 @@ tenFoldModel$confusionMatrix %&gt;% getEvaluation %&gt;% kable</code></pre>
 </tbody>
 </table>
 </div>
-<div id="bagging" class="section level3">
-<h3>Bagging</h3>
-<p>Now we will implement using the ensemble learning method, using Cart as the base classifier, again with stratified 10-fold CV.</p>
+<div id="bagging" class="section level2">
+<h2>Bagging</h2>
+<p>Now we will implement using Bagging, the ensemble learning method, again with stratified 10-fold CV.</p>
 <pre class="r"><code>model &lt;- Bagging(TargetOutput ~ ., data = sonarDf)
 #(model %&gt;% summary)$confusionMatrix %&gt;% getEvaluation %&gt;% kable
 tenFoldModel &lt;- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
@@ -324,8 +329,8 @@ tenFoldModel$confusionMatrix %&gt;% getEvaluation %&gt;% kable</code></pre>
 </tbody>
 </table>
 </div>
-<div id="boosting" class="section level3">
-<h3>Boosting</h3>
+<div id="boosting" class="section level2">
+<h2>Boosting</h2>
 <p>Now we will implement using Adaboost, again with stratified 10-fold CV.</p>
 <pre class="r"><code>model &lt;- AdaBoostM1(TargetOutput ~ ., data = sonarDf)
 #(model %&gt;% summary)$confusionMatrix %&gt;% getEvaluation %&gt;% kable
@@ -349,29 +354,30 @@ tenFoldModel$confusionMatrix %&gt;% getEvaluation %&gt;% kable</code></pre>
 </tr>
 </tbody>
 </table>
+<p>We observe that Bagging and Boosting produce slightly better results than the base C4 classifier approach.</p>
 </div>
 </div>
-<div id="section-4-in-assignment-description" class="section level2">
-<h2>Section 4 in assignment description</h2>
+<div id="section-4-in-assignment-description" class="section level1">
+<h1>Section 4 in assignment description</h1>
 <p>Now we proceed to import other datasets, to test the multiple algorithms on them.</p>
-<div id="importing-hepatitis-dataset" class="section level3">
-<h3>Importing Hepatitis dataset</h3>
+<div id="importing-hepatitis-dataset" class="section level2">
+<h2>Importing Hepatitis dataset</h2>
 <p>Here the class attribute is the first attribute, as stated in <code>hepatitis.names</code> on the UCI repository.</p>
 <pre class="r"><code>#hepatitisDf &lt;- read.csv('C:/Users/Amir George/Rworkspace/Assignment1-DataScience/csen1061-assignment-modeling/datasets/hepatitis.data', header = FALSE)
 hepatitisDf &lt;- read.csv('datasets/hepatitis.data', header = FALSE)
 names(hepatitisDf)[names(hepatitisDf)==&quot;V1&quot;] &lt;- &quot;TargetOutput&quot;
 hepatitisDf &lt;- hepatitisDf  %&gt;% mutate(TargetOutput = as.factor(TargetOutput))</code></pre>
 </div>
-<div id="importing-spect-dataset" class="section level3">
-<h3>Importing Spect dataset</h3>
+<div id="importing-spect-dataset" class="section level2">
+<h2>Importing Spect dataset</h2>
 <p>Here the class attribute is the first attribute, as stated in <code>SPECT.names</code> on the UCI repository.</p>
 <pre class="r"><code>#spectDf &lt;- read.csv('C:/Users/Amir George/Rworkspace/Assignment1-DataScience/csen1061-assignment-modeling/datasets/SPECT.data', header = FALSE)
 spectDf &lt;- read.csv('datasets/SPECT.data', header = FALSE)
 names(spectDf)[names(spectDf)==&quot;V1&quot;] &lt;- &quot;TargetOutput&quot;
 spectDf &lt;- spectDf  %&gt;% mutate(TargetOutput = as.factor(TargetOutput))</code></pre>
 </div>
-<div id="importing-pima-indians-dataset" class="section level3">
-<h3>Importing Pima-indians dataset</h3>
+<div id="importing-pima-indians-dataset" class="section level2">
+<h2>Importing Pima-indians dataset</h2>
 <p>Here the class attribute is the ninth attribute, as stated in <code>pima-indians-diabetes.names</code> on the UCI repository.</p>
 <pre class="r"><code>#pimaDf &lt;- read.csv('C:/Users/Amir George/Rworkspace/Assignment1-DataScience/csen1061-assignment-modeling/datasets/pima-indians-diabetes.data', header = FALSE)
 pimaDf &lt;- read.csv('datasets/pima-indians-diabetes.data', header = FALSE)
@@ -379,10 +385,10 @@ names(pimaDf)[names(pimaDf)==&quot;V9&quot;] &lt;- &quot;TargetOutput&quot;
 pimaDf &lt;- pimaDf  %&gt;% mutate(TargetOutput = as.factor(TargetOutput))</code></pre>
 </div>
 </div>
-<div id="results-of-10-by-10-cv-for-each-dataset-algorithm-pair" class="section level2">
-<h2>Results of 10 by 10 CV for each dataset &amp; algorithm pair</h2>
-<div id="x10-cv-helper-function" class="section level3">
-<h3>10x10 CV helper function</h3>
+<div id="results-of-10-by-10-cv-for-each-dataset-algorithm-pair" class="section level1">
+<h1>Results of 10 by 10 CV for each dataset &amp; algorithm pair</h1>
+<div id="x10-cv-helper-function" class="section level2">
+<h2>10x10 CV helper function</h2>
 <p>This function takes as input a dataframe and an algorithm and does stratified 10x10 CV with random seeds on the given algorithm model.</p>
 <pre class="r"><code>doCV10by10 &lt;- function(df,algorithm) {
   randSeeds &lt;- c(100, 458, 2532, 324, 7655, 987, 723, 247, 956, 3421)
@@ -396,9 +402,9 @@ pimaDf &lt;- pimaDf  %&gt;% mutate(TargetOutput = as.factor(TargetOutput))</code
   res / 10
 }</code></pre>
 </div>
-<div id="x10-cv-calculations" class="section level3">
-<h3>10x10 CV calculations</h3>
-<p>Now we proceed by calculating all our required 10x10 CV calculations. The NN 10x10 calculations took more than 5 minutes, so they have been commented out, and will not be displayed in our metric tables.</p>
+<div id="x10-cv-calculations" class="section level2">
+<h2>10x10 CV calculations</h2>
+<p>Now we proceed by calculating all our required 10x10 CV calculations. The NN 10x10 calculations took several minutes, so they have been commented out, and will not be displayed in our metric tables.</p>
 <pre class="r"><code>#sonar
 sonarJ48 &lt;- doCV10by10(sonarDf, J48)
 sonarRF &lt;- doCV10by10(sonarDf, RandomForest)
@@ -435,8 +441,8 @@ pimaNB &lt;- doCV10by10(pimaDf, NaiveBayes)
 pimaBag &lt;- doCV10by10(pimaDf, Bagging)
 pimaBoost &lt;- doCV10by10(pimaDf, AdaBoostM1)</code></pre>
 </div>
-<div id="metric-extraction-helper-function" class="section level3">
-<h3>Metric extraction helper function</h3>
+<div id="metric-extraction-helper-function" class="section level2">
+<h2>Metric extraction helper function</h2>
 <p>This function extracts a given metric from the previous calculations, and displays it.</p>
 <pre class="r"><code>showMetric &lt;- function(i) {
   mat &lt;- matrix(c(sonarJ48[i], hepatitisJ48[i], spectJ48[i],pimaJ48[i],
@@ -448,13 +454,14 @@ pimaBoost &lt;- doCV10by10(pimaDf, AdaBoostM1)</code></pre>
                  nrow = 4, ncol = 6)
 colnames(mat) &lt;- c(&quot;C4.5 DT&quot;, &quot;Random Forest&quot;, &quot;SVM&quot;, &quot;Naive Bayes&quot;, &quot;Bag&quot;, &quot;Boost&quot;)
 rownames(mat) &lt;- c(&quot;Sonar&quot;, &quot;Hepatitis&quot;, &quot;Spect&quot;, &quot;Pima&quot;)
-mat %&gt;% kable
+return(mat)
 }</code></pre>
 </div>
-<div id="accuracies-comparison" class="section level3">
-<h3>Accuracies comparison</h3>
+<div id="accuracies-comparison" class="section level2">
+<h2>Accuracies comparison</h2>
 <p>Now we extract the accuracy results from the above calculations</p>
-<pre class="r"><code>showMetric(1)</code></pre>
+<pre class="r"><code>accMetric &lt;- showMetric(1)
+accMetric %&gt;% kable</code></pre>
 <table>
 <thead>
 <tr class="header">
@@ -507,10 +514,11 @@ mat %&gt;% kable
 </tbody>
 </table>
 </div>
-<div id="precision-comparison" class="section level3">
-<h3>Precision comparison</h3>
+<div id="precisions-comparison" class="section level2">
+<h2>Precisions comparison</h2>
 <p>Now we extract the precision results from the above calculations</p>
-<pre class="r"><code>showMetric(2)</code></pre>
+<pre class="r"><code>preMetric &lt;- showMetric(2)
+preMetric %&gt;% kable</code></pre>
 <table>
 <thead>
 <tr class="header">
@@ -563,10 +571,11 @@ mat %&gt;% kable
 </tbody>
 </table>
 </div>
-<div id="recall-comparison" class="section level3">
-<h3>Recall comparison</h3>
+<div id="recalls-comparison" class="section level2">
+<h2>Recalls comparison</h2>
 <p>Now we extract the recall results from the above calculations</p>
-<pre class="r"><code>showMetric(3)</code></pre>
+<pre class="r"><code>recMetric &lt;- showMetric(3)
+recMetric %&gt;% kable</code></pre>
 <table>
 <thead>
 <tr class="header">
@@ -619,10 +628,11 @@ mat %&gt;% kable
 </tbody>
 </table>
 </div>
-<div id="f1-comparison" class="section level3">
-<h3>F1 comparison</h3>
+<div id="f1-comparison" class="section level2">
+<h2>F1 comparison</h2>
 <p>Now we extract the F1 results from the above calculations</p>
-<pre class="r"><code>showMetric(4)</code></pre>
+<pre class="r"><code>f1Metric &lt;- showMetric(4)
+f1Metric %&gt;% kable</code></pre>
 <table>
 <thead>
 <tr class="header">
@@ -675,6 +685,220 @@ mat %&gt;% kable
 </tbody>
 </table>
 </div>
+</div>
+<div id="statistical-significance-tests" class="section level1">
+<h1>Statistical Significance Tests</h1>
+<p>In this final section we test whether the previous metric differences were statistically significant or not.</p>
+<div id="helper-functions-1" class="section level2">
+<h2>Helper functions</h2>
+<pre class="r"><code>sigMetric &lt;- function(metric) {
+  extractSig &lt;- function(tst) {
+  return(paste(&quot;t=&quot;,tst$statistic[[1]],&quot;,p=&quot;,tst$p.value))
+}
+a12 &lt;- t.test(metric[,1],metric[,2],paired=TRUE) %&gt;% extractSig
+a13 &lt;- t.test(metric[,1],metric[,3],paired=TRUE) %&gt;% extractSig
+a14 &lt;- t.test(metric[,1],metric[,4],paired=TRUE) %&gt;% extractSig
+a15 &lt;- t.test(metric[,1],metric[,5],paired=TRUE) %&gt;% extractSig
+a16 &lt;- t.test(metric[,1],metric[,6],paired=TRUE) %&gt;% extractSig
+a23 &lt;- t.test(metric[,2],metric[,3],paired=TRUE) %&gt;% extractSig
+a24 &lt;- t.test(metric[,2],metric[,4],paired=TRUE) %&gt;% extractSig
+a25 &lt;- t.test(metric[,2],metric[,5],paired=TRUE) %&gt;% extractSig
+a26 &lt;- t.test(metric[,2],metric[,6],paired=TRUE) %&gt;% extractSig
+a34 &lt;- t.test(metric[,3],metric[,4],paired=TRUE) %&gt;% extractSig
+a35 &lt;- t.test(metric[,3],metric[,5],paired=TRUE) %&gt;% extractSig
+a36 &lt;- t.test(metric[,3],metric[,6],paired=TRUE) %&gt;% extractSig
+a45 &lt;- t.test(metric[,4],metric[,5],paired=TRUE) %&gt;% extractSig
+a46 &lt;- t.test(metric[,4],metric[,6],paired=TRUE) %&gt;% extractSig
+a56 &lt;- t.test(metric[,5],metric[,6],paired=TRUE) %&gt;% extractSig
+
+myStat &lt;- matrix(c(a12,a13,a14,a15,a16,a23,a24,a25,a26,a34,a35,a36,a45,a46,a56), ncol = 15, nrow = 1)
+colnames(myStat)&lt;- c(&quot;C4.5vsRf&quot;,&quot;C4.5vsSVM&quot;,&quot;C4.5vsNB&quot;,&quot;C4.5vsBag&quot;,&quot;C4.5vsBoost&quot;,
+                     &quot;RfvsSVM&quot;,&quot;RfvsNB&quot;,&quot;RfvsBag&quot;,&quot;RfvsBoost&quot;,
+                     &quot;SVMvsNB&quot;,&quot;SVMvsBag&quot;,&quot;SVMvsBoost&quot;,
+                     &quot;NBvsBag&quot;,&quot;NBvsBoost&quot;,
+                     &quot;BagvsBoost&quot;)
+return(myStat)
+}</code></pre>
+</div>
+<div id="accuracy-signifincance" class="section level2">
+<h2>Accuracy signifincance</h2>
+<pre class="r"><code>accSig &lt;- sigMetric(accMetric)
+accSig %&gt;% kable</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">C4.5vsRf</th>
+<th align="left">C4.5vsSVM</th>
+<th align="left">C4.5vsNB</th>
+<th align="left">C4.5vsBag</th>
+<th align="left">C4.5vsBoost</th>
+<th align="left">RfvsSVM</th>
+<th align="left">RfvsNB</th>
+<th align="left">RfvsBag</th>
+<th align="left">RfvsBoost</th>
+<th align="left">SVMvsNB</th>
+<th align="left">SVMvsBag</th>
+<th align="left">SVMvsBoost</th>
+<th align="left">NBvsBag</th>
+<th align="left">NBvsBoost</th>
+<th align="left">BagvsBoost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">t= -0.820262331377715 ,p= 0.472171388170233</td>
+<td align="left">t= -0.839571206982726 ,p= 0.462783052011644</td>
+<td align="left">t= 1.67052036049621 ,p= 0.193409297644341</td>
+<td align="left">t= 0.0501038962829949 ,p= 0.963188897290378</td>
+<td align="left">t= 0.648044061288431 ,p= 0.563133712468723</td>
+<td align="left">t= 0.653766825205269 ,p= 0.559903643059947</td>
+<td align="left">t= 1.19281798750077 ,p= 0.318681795745793</td>
+<td align="left">t= 1.29181711635349 ,p= 0.286939933745563</td>
+<td align="left">t= 1.41681724647933 ,p= 0.251527476922189</td>
+<td align="left">t= 1.4174006890623 ,p= 0.251373580976029</td>
+<td align="left">t= 1.76809281265845 ,p= 0.175202381392794</td>
+<td align="left">t= 1.71965813254902 ,p= 0.183983966868559</td>
+<td align="left">t= -0.750967683262715 ,p= 0.507210338032468</td>
+<td align="left">t= -0.936118921300444 ,p= 0.41826905944283</td>
+<td align="left">t= 0.287986764685271 ,p= 0.79210655078253</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="precision-signifincance" class="section level2">
+<h2>Precision signifincance</h2>
+<pre class="r"><code>preSig &lt;- sigMetric(preMetric)
+preSig %&gt;% kable</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">C4.5vsRf</th>
+<th align="left">C4.5vsSVM</th>
+<th align="left">C4.5vsNB</th>
+<th align="left">C4.5vsBag</th>
+<th align="left">C4.5vsBoost</th>
+<th align="left">RfvsSVM</th>
+<th align="left">RfvsNB</th>
+<th align="left">RfvsBag</th>
+<th align="left">RfvsBoost</th>
+<th align="left">SVMvsNB</th>
+<th align="left">SVMvsBag</th>
+<th align="left">SVMvsBoost</th>
+<th align="left">NBvsBag</th>
+<th align="left">NBvsBoost</th>
+<th align="left">BagvsBoost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">t= -1.71115203040595 ,p= 0.185577529734324</td>
+<td align="left">t= 0.397986028242137 ,p= 0.717270187980655</td>
+<td align="left">t= 1.33564405466428 ,p= 0.273956148816188</td>
+<td align="left">t= 0.651723937225285 ,p= 0.561055085973181</td>
+<td align="left">t= 1.76731966708928 ,p= 0.175338736541267</td>
+<td align="left">t= 1.49064487796205 ,p= 0.232841459360692</td>
+<td align="left">t= 2.23514507181828 ,p= 0.11146260856072</td>
+<td align="left">t= 0.974351705197828 ,p= 0.401744279758593</td>
+<td align="left">t= 2.9403770652149 ,p= 0.0604917997241049</td>
+<td align="left">t= 0.536769132075187 ,p= 0.628681055016702</td>
+<td align="left">t= 0.768484941360316 ,p= 0.498153525978313</td>
+<td align="left">t= 0.504605409031525 ,p= 0.648567406875693</td>
+<td align="left">t= 0.301288287361081 ,p= 0.782870852084012</td>
+<td align="left">t= -0.398119937318978 ,p= 0.717181379374176</td>
+<td align="left">t= -0.33603624809972 ,p= 0.758973910175985</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="recall-signifincance" class="section level2">
+<h2>Recall signifincance</h2>
+<pre class="r"><code>recSig &lt;- sigMetric(recMetric)
+recSig %&gt;% kable</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">C4.5vsRf</th>
+<th align="left">C4.5vsSVM</th>
+<th align="left">C4.5vsNB</th>
+<th align="left">C4.5vsBag</th>
+<th align="left">C4.5vsBoost</th>
+<th align="left">RfvsSVM</th>
+<th align="left">RfvsNB</th>
+<th align="left">RfvsBag</th>
+<th align="left">RfvsBoost</th>
+<th align="left">SVMvsNB</th>
+<th align="left">SVMvsBag</th>
+<th align="left">SVMvsBoost</th>
+<th align="left">NBvsBag</th>
+<th align="left">NBvsBoost</th>
+<th align="left">BagvsBoost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">t= 0.438980544475833 ,p= 0.690369115963609</td>
+<td align="left">t= -14.6518407769167 ,p= 0.000689539034065426</td>
+<td align="left">t= -0.892212714992372 ,p= 0.438013280976581</td>
+<td align="left">t= 0.855764823167356 ,p= 0.455035018467302</td>
+<td align="left">t= 1.02771076180652 ,p= 0.379701922274973</td>
+<td align="left">t= -0.994884011342442 ,p= 0.393123079128161</td>
+<td align="left">t= -0.703191906803317 ,p= 0.532595449323238</td>
+<td align="left">t= 1.75362086661392 ,p= 0.177775006679348</td>
+<td align="left">t= 0.0424349306078592 ,p= 0.968818338037403</td>
+<td align="left">t= -0.295836547096179 ,p= 0.786650501648033</td>
+<td align="left">t= 1.48114374429294 ,p= 0.235159105407324</td>
+<td align="left">t= 2.37985346207323 ,p= 0.0976307532875706</td>
+<td align="left">t= 0.936710515173724 ,p= 0.418008652458428</td>
+<td align="left">t= 0.96893305035741 ,p= 0.404048852022425</td>
+<td align="left">t= -0.324281364676108 ,p= 0.767019631599147</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="f1-signifincance" class="section level2">
+<h2>F1 signifincance</h2>
+<pre class="r"><code>f1Sig &lt;- sigMetric(f1Metric)
+f1Sig %&gt;% kable</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">C4.5vsRf</th>
+<th align="left">C4.5vsSVM</th>
+<th align="left">C4.5vsNB</th>
+<th align="left">C4.5vsBag</th>
+<th align="left">C4.5vsBoost</th>
+<th align="left">RfvsSVM</th>
+<th align="left">RfvsNB</th>
+<th align="left">RfvsBag</th>
+<th align="left">RfvsBoost</th>
+<th align="left">SVMvsNB</th>
+<th align="left">SVMvsBag</th>
+<th align="left">SVMvsBoost</th>
+<th align="left">NBvsBag</th>
+<th align="left">NBvsBoost</th>
+<th align="left">BagvsBoost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">t= 0.598043599390209 ,p= 0.591948501358942</td>
+<td align="left">t= -2.33204397538412 ,p= 0.101957681042195</td>
+<td align="left">t= -0.469476069634626 ,p= 0.670744525972196</td>
+<td align="left">t= 0.872330587482536 ,p= 0.447227107410577</td>
+<td align="left">t= 1.25191217889628 ,p= 0.299322368650091</td>
+<td align="left">t= -0.934914753181627 ,p= 0.418799568424124</td>
+<td align="left">t= -0.584938654802425 ,p= 0.599674809690723</td>
+<td align="left">t= 1.75042299683904 ,p= 0.17834930245467</td>
+<td align="left">t= -0.146642307663844 ,p= 0.89271430495481</td>
+<td align="left">t= 0.161795597430831 ,p= 0.881749717142137</td>
+<td align="left">t= 1.25070448222277 ,p= 0.299705653234159</td>
+<td align="left">t= 1.76038168291988 ,p= 0.176567810054719</td>
+<td align="left">t= 0.801974063536951 ,p= 0.481214094316312</td>
+<td align="left">t= 0.921302846250133 ,p= 0.424839412464554</td>
+<td align="left">t= -0.40012176657409 ,p= 0.715854480170743</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 

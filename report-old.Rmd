@@ -1,11 +1,12 @@
 ---
-title: "Assignment1-DataScience"
+title: "Assignment1-DataScience-draft"
 author: "Amir George"
 date: "April 14, 2016"
 output: html_document
 ---
+# NOTE: This is an incomplete experiment that mainly used the `caret` package but encountered some problems regarding efficiency, please refere to `report.Rmd` for the final and complete version that uses the `RWeka` package.
 
-# Attaching the required libraries
+## Attaching the required libraries
 ```{r message=FALSE}
 library(plyr)
 library(dplyr)

@@ -15,6 +15,7 @@ library(RWeka)
 
 # Helper functions
 Here we define helper functions that will be repeatedly used throughout the assignment.
+
 ## `getEvaluation` function
 The function `getEvaluation` extracts the required classification evaluation measures from a given confusion matrix.
 ```{r}
@@ -55,7 +56,7 @@ tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 
 Now the evaluation metrics are significantly lower after the CV, but this is more realistic and reliable than the first approach which was too optimistic.
 
-## Section 3 in assignment description
+# Section 3 in assignment description
 In this section we will also train and test using 10-fold CV on the sonar dataset but with other classification algorithms. First we need to create interface functions for our desired Weka classifiers.
 ```{r}
 RandomForest <- make_Weka_classifier("weka/classifiers/trees/RandomForest")
@@ -63,7 +64,7 @@ NaiveBayes <- make_Weka_classifier("weka/classifiers/bayes/NaiveBayes")
 NeuralNetwork <- make_Weka_classifier("weka/classifiers/functions/MultilayerPerceptron")
 ```
 
-### Random Forest
+## Random Forest
 ```{r cache=TRUE}
 model <- RandomForest(TargetOutput ~ ., data = sonarDf)
 #(model %>% summary)$confusionMatrix %>% getEvaluation %>% kable
@@ -71,7 +72,7 @@ tenFoldModel <- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
 tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 ```
 
-###Support Vector Machines (SVM)
+##Support Vector Machines (SVM)
 Out of all the SVM methods offered by the caret package, we chose the `svmRadial` method.
 ```{r cache=TRUE}
 model <- SMO(TargetOutput ~ ., data = sonarDf)
@@ -80,7 +81,7 @@ tenFoldModel <- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
 tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 ```
 
-### Naive Bayes
+## Naive Bayes
 ```{r cache=TRUE, warning=FALSE}
 model <- NaiveBayes(TargetOutput ~ ., data = sonarDf)
 #(model %>% summary)$confusionMatrix %>% getEvaluation %>% kable
@@ -88,7 +89,7 @@ tenFoldModel <- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
 tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 ```
 
-### Neural Networks
+## Neural Networks
 ```{r cache=TRUE}
 model <- NeuralNetwork(TargetOutput ~ ., data = sonarDf)
 #(model %>% summary)$confusionMatrix %>% getEvaluation %>% kable
@@ -96,7 +97,7 @@ tenFoldModel <- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
 tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 ```
 
-### Bagging
+## Bagging
 Now we will implement using Bagging, the ensemble learning method, again with stratified 10-fold CV.
 ```{r cache=TRUE, warning=FALSE}
 model <- Bagging(TargetOutput ~ ., data = sonarDf)
@@ -105,7 +106,7 @@ tenFoldModel <- evaluate_Weka_classifier(model, numFolds = 10, seed = 123)
 tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 ```
 
-### Boosting
+## Boosting
 Now we will implement using Adaboost, again with stratified 10-fold CV.
 ```{r cache=TRUE}
 model <- AdaBoostM1(TargetOutput ~ ., data = sonarDf)
@@ -116,10 +117,10 @@ tenFoldModel$confusionMatrix %>% getEvaluation %>% kable
 
 We observe that Bagging and Boosting produce slightly better results than the base C4 classifier approach.
 
-## Section 4 in assignment description
+# Section 4 in assignment description
 Now we proceed to import other datasets, to test the multiple algorithms on them.
 
-### Importing Hepatitis dataset
+## Importing Hepatitis dataset
 Here the class attribute is the first attribute, as stated in `hepatitis.names` on the UCI repository.
 ```{r cache=TRUE}
 #hepatitisDf <- read.csv('C:/Users/Amir George/Rworkspace/Assignment1-DataScience/csen1061-assignment-modeling/datasets/hepatitis.data', header = FALSE)
@@ -128,7 +129,7 @@ names(hepatitisDf)[names(hepatitisDf)=="V1"] <- "TargetOutput"
 hepatitisDf <- hepatitisDf  %>% mutate(TargetOutput = as.factor(TargetOutput))
 ```
 
-### Importing Spect dataset
+## Importing Spect dataset
 Here the class attribute is the first attribute, as stated in `SPECT.names` on the UCI repository.
 ```{r cache=TRUE}
 #spectDf <- read.csv('C:/Users/Amir George/Rworkspace/Assignment1-DataScience/csen1061-assignment-modeling/datasets/SPECT.data', header = FALSE)
@@ -137,7 +138,7 @@ names(spectDf)[names(spectDf)=="V1"] <- "TargetOutput"
 spectDf <- spectDf  %>% mutate(TargetOutput = as.factor(TargetOutput))
 ```
 
-### Importing Pima-indians dataset
+## Importing Pima-indians dataset
 Here the class attribute is the ninth attribute, as stated in `pima-indians-diabetes.names` on the UCI repository.
 ```{r cache=TRUE}
 #pimaDf <- read.csv('C:/Users/Amir George/Rworkspace/Assignment1-DataScience/csen1061-assignment-modeling/datasets/pima-indians-diabetes.data', header = FALSE)
@@ -146,9 +147,9 @@ names(pimaDf)[names(pimaDf)=="V9"] <- "TargetOutput"
 pimaDf <- pimaDf  %>% mutate(TargetOutput = as.factor(TargetOutput))
 ```
 
-## Results of 10 by 10 CV for each dataset & algorithm pair
+# Results of 10 by 10 CV for each dataset & algorithm pair
 
-### 10x10 CV helper function
+## 10x10 CV helper function
 This function takes as input a dataframe and an algorithm and does stratified 10x10 CV with random seeds on the given algorithm model.
 ```{r cache=TRUE}
 doCV10by10 <- function(df,algorithm) {
@@ -164,8 +165,8 @@ doCV10by10 <- function(df,algorithm) {
 }
 ```
 
-### 10x10 CV calculations
-Now we proceed by calculating all our required 10x10 CV calculations. The NN 10x10 calculations took more than 5 minutes, so they have been commented out, and will not be displayed in our metric tables.
+## 10x10 CV calculations
+Now we proceed by calculating all our required 10x10 CV calculations. The NN 10x10 calculations took several minutes, so they have been commented out, and will not be displayed in our metric tables.
 ```{r cache=TRUE}
 #sonar
 sonarJ48 <- doCV10by10(sonarDf, J48)
@@ -204,7 +205,7 @@ pimaBag <- doCV10by10(pimaDf, Bagging)
 pimaBoost <- doCV10by10(pimaDf, AdaBoostM1)
 ```
 
-### Metric extraction helper function
+## Metric extraction helper function
 This function extracts a given metric from the previous calculations, and displays it.
 ```{r cache=TRUE}
 showMetric <- function(i) {
@@ -217,30 +218,93 @@ showMetric <- function(i) {
                  nrow = 4, ncol = 6)
 colnames(mat) <- c("C4.5 DT", "Random Forest", "SVM", "Naive Bayes", "Bag", "Boost")
 rownames(mat) <- c("Sonar", "Hepatitis", "Spect", "Pima")
-mat %>% kable
+return(mat)
 }
 ```
 
-### Accuracies comparison
+## Accuracies comparison
 Now we extract the accuracy results from the above calculations
 ```{r}
-showMetric(1)
+accMetric <- showMetric(1)
+accMetric %>% kable
 ```
 
-### Precision comparison
+## Precisions comparison
 Now we extract the precision results from the above calculations
 ```{r}
-showMetric(2)
+preMetric <- showMetric(2)
+preMetric %>% kable
 ```
 
-### Recall comparison
+## Recalls comparison
 Now we extract the recall results from the above calculations
 ```{r}
-showMetric(3)
+recMetric <- showMetric(3)
+recMetric %>% kable
 ```
 
-### F1 comparison
+## F1 comparison
 Now we extract the F1 results from the above calculations
 ```{r}
-showMetric(4)
+f1Metric <- showMetric(4)
+f1Metric %>% kable
+```
+
+# Statistical Significance Tests
+In this final section we test whether the previous metric differences were statistically significant or not.
+
+## Helper functions
+```{r}
+sigMetric <- function(metric) {
+  extractSig <- function(tst) {
+  return(paste("t=",tst$statistic[[1]],",p=",tst$p.value))
+}
+a12 <- t.test(metric[,1],metric[,2],paired=TRUE) %>% extractSig
+a13 <- t.test(metric[,1],metric[,3],paired=TRUE) %>% extractSig
+a14 <- t.test(metric[,1],metric[,4],paired=TRUE) %>% extractSig
+a15 <- t.test(metric[,1],metric[,5],paired=TRUE) %>% extractSig
+a16 <- t.test(metric[,1],metric[,6],paired=TRUE) %>% extractSig
+a23 <- t.test(metric[,2],metric[,3],paired=TRUE) %>% extractSig
+a24 <- t.test(metric[,2],metric[,4],paired=TRUE) %>% extractSig
+a25 <- t.test(metric[,2],metric[,5],paired=TRUE) %>% extractSig
+a26 <- t.test(metric[,2],metric[,6],paired=TRUE) %>% extractSig
+a34 <- t.test(metric[,3],metric[,4],paired=TRUE) %>% extractSig
+a35 <- t.test(metric[,3],metric[,5],paired=TRUE) %>% extractSig
+a36 <- t.test(metric[,3],metric[,6],paired=TRUE) %>% extractSig
+a45 <- t.test(metric[,4],metric[,5],paired=TRUE) %>% extractSig
+a46 <- t.test(metric[,4],metric[,6],paired=TRUE) %>% extractSig
+a56 <- t.test(metric[,5],metric[,6],paired=TRUE) %>% extractSig
+
+myStat <- matrix(c(a12,a13,a14,a15,a16,a23,a24,a25,a26,a34,a35,a36,a45,a46,a56), ncol = 15, nrow = 1)
+colnames(myStat)<- c("C4.5vsRf","C4.5vsSVM","C4.5vsNB","C4.5vsBag","C4.5vsBoost",
+                     "RfvsSVM","RfvsNB","RfvsBag","RfvsBoost",
+                     "SVMvsNB","SVMvsBag","SVMvsBoost",
+                     "NBvsBag","NBvsBoost",
+                     "BagvsBoost")
+return(myStat)
+}
+```
+
+## Accuracy signifincance
+```{r}
+accSig <- sigMetric(accMetric)
+accSig %>% kable
+```
+
+## Precision signifincance
+```{r}
+preSig <- sigMetric(preMetric)
+preSig %>% kable
+```
+
+## Recall signifincance
+```{r}
+recSig <- sigMetric(recMetric)
+recSig %>% kable
+```
+
+## F1 signifincance
+```{r}
+f1Sig <- sigMetric(f1Metric)
+f1Sig %>% kable
 ```
