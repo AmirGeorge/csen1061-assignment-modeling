@@ -1,4 +1,5 @@
 base
+plyr
 dplyr
 knitr
 tidyr
@@ -11,4 +12,7 @@ randomForest
 kernlab
 MASS
 klaR
+rpart
+ipred
+fastAdaboost
 nnet
