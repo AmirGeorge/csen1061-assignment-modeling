@@ -1,0 +1,78 @@
+---
+title: "Assignment1-DataScience"
+author: "Amir George"
+date: "April 14, 2016"
+output: html_document
+---
+
+# Attaching the required libraries
+```{r message=FALSE}
+library(dplyr)
+library(knitr)
+library(tidyr)
+library(caret)
+library(RWeka)
+library(e1071)
+library(randomForest)
+```
+
+# Helper functions
+Here we define helper functions that will be repeatedly used throughout the assignment.
+## `getEvaluation` function
+The function `getEvaluation` extracts the required classification evaluation measures from a given model.
+```{r}
+getEvaluation <- function(entity,myType) {
+  if (myType=="model") {
+    entity <- confusionMatrix(entity)
+  }
+  tp <- entity$table[1,1]
+  fn <- entity$table[1, 2]
+  fp <- entity$table[2, 1]
+  tn <- entity$table[2, 2]
+  Accurary <- (tp + tn) / (tp + fn + fp + tn)
+  Precision <- tp / (tp + fp)
+  Recall <- tp / (tp + fn)
+  F1 <- (2 * Precision * Recall) / (Precision + Recall)
+  res <- cbind(Accurary,Precision,Recall,F1)
+  return(res)
+}
+```
+
+# Reading the sonar dataset
+We read the whole dataset, and give the target output column a clear name.
+```{r}
+#sonarDf <- read.csv('C:/Users/Amir George/Rworkspace/Assignment1-DataScience/csen1061-assignment-modeling/datasets/sonar/sonar.all-data', header = FALSE)
+sonarDf <- read.csv('datasets/sonar/sonar.all-data', header = FALSE)
+names(sonarDf)[names(sonarDf)=="V61"] <- "TargetOutput"
+```
+
+# Section 2 in assignment description
+In this section we construct a C4.5 decision tree on the sonar dataset, using the entire dataset as the learning set, and showcase the different classification evaluation measures. We consider the metal class as the positive class.
+```{r}
+#sonarDTall <- J48(TargetOutput ~ ., data = sonarDf)
+sonarDTall <- train(TargetOutput ~ ., data=sonarDf, method="J48")
+#sonarDTall %>% getEvaluation("model") %>% kable
+predictions <- predict(sonarDTall, sonarDf[,1:60])
+confusionMatrix(predictions, sonarDf[,61]) %>% getEvaluation(myType = "matrix") %>% kable
+```
+
+We should note that the above measures are not reliable since training and testing were done on the same dataset, which should never be done due to overfitting. To avoid this problem, we will use stratified 10-fold cross-validation.
+```{r}
+tenFoldCVControl <- trainControl(method = "cv", number = 10)
+sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="J48",trControl=tenFoldCVControl)
+sonarDTtenFoldCV %>% getEvaluation("model") %>% kable
+```
+
+## Section 3 in assignment description
+In this section we will also train and test using 10-fold CV on the sonar dataset but with other classification algorithms.
+
+### Random Forest
+```{r}
+sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="rf",trControl=tenFoldCVControl)
+sonarDTtenFoldCV %>% getEvaluation("model") %>% kable
+```
+
+###Support Vector Machines (SVM)
+```{r}
+
+```
