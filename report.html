@@ -397,7 +397,7 @@ pimaDf &lt;- pimaDf  %&gt;% mutate(TargetOutput = as.factor(TargetOutput))</code
 </div>
 <div id="x10-cv-calculations" class="section level3">
 <h3>10x10 CV calculations</h3>
-<p>Now we proceed by calculating all our required 10x10 CV calculations</p>
+<p>Now we proceed by calculating all our required 10x10 CV calculations. The NN 10x10 calculations took more than 5 minutes, so they have been commented out, and will not be displayed in our metric tables.</p>
 <pre class="r"><code>#sonar
 sonarJ48 &lt;- doCV10by10(sonarDf, J48)
 sonarRF &lt;- doCV10by10(sonarDf, RandomForest)

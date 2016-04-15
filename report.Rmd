@@ -161,7 +161,7 @@ doCV10by10 <- function(df,algorithm) {
 ```
 
 ### 10x10 CV calculations
-Now we proceed by calculating all our required 10x10 CV calculations
+Now we proceed by calculating all our required 10x10 CV calculations. The NN 10x10 calculations took more than 5 minutes, so they have been commented out, and will not be displayed in our metric tables.
 ```{r cache=TRUE}
 #sonar
 sonarJ48 <- doCV10by10(sonarDf, J48)
