@@ -124,7 +124,9 @@ library(tidyr)
 library(caret)
 library(RWeka)
 library(e1071)
-library(randomForest)</code></pre>
+library(randomForest)
+library(kernlab)
+library(klaR)</code></pre>
 </div>
 <div id="helper-functions" class="section level1">
 <h1>Helper functions</h1>
@@ -178,7 +180,7 @@ confusionMatrix(predictions, sonarDf[,61]) %&gt;% getEvaluation(myType = &quot;m
 </tr>
 </tbody>
 </table>
-<p>We should note that these measures are not reliable since training and testing were done on the same dataset, which should never be done due to overfitting. To avoid this problem, we will use stratified 10-fold cross-validation.</p>
+<p>We should note that the above measures are not reliable since training and testing were done on the same dataset, which should never be done due to overfitting. To avoid this problem, we will use stratified 10-fold cross-validation.</p>
 <pre class="r"><code>tenFoldCVControl &lt;- trainControl(method = &quot;cv&quot;, number = 10)
 sonarDTtenFoldCV &lt;- train(TargetOutput ~ ., data=sonarDf, method=&quot;J48&quot;,trControl=tenFoldCVControl)
 sonarDTtenFoldCV %&gt;% getEvaluation(&quot;model&quot;) %&gt;% kable</code></pre>
@@ -193,15 +195,15 @@ sonarDTtenFoldCV %&gt;% getEvaluation(&quot;model&quot;) %&gt;% kable</code></pr
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">0.7259615</td>
-<td align="right">0.7567568</td>
-<td align="right">0.7368421</td>
-<td align="right">0.7466667</td>
+<td align="right">0.7692308</td>
+<td align="right">0.7837838</td>
+<td align="right">0.7837838</td>
+<td align="right">0.7837838</td>
 </tr>
 </tbody>
 </table>
-<div id="secion-3-in-assignment-description" class="section level2">
-<h2>Secion 3 in assignment description</h2>
+<div id="section-3-in-assignment-description" class="section level2">
+<h2>Section 3 in assignment description</h2>
 <p>In this section we will also train and test using 10-fold CV on the sonar dataset but with other classification algorithms.</p>
 <div id="random-forest" class="section level3">
 <h3>Random Forest</h3>
@@ -218,16 +220,83 @@ sonarDTtenFoldCV %&gt;% getEvaluation(&quot;model&quot;) %&gt;% kable</code></pr
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">0.8509615</td>
-<td align="right">0.9099099</td>
-<td align="right">0.8278689</td>
-<td align="right">0.8669528</td>
+<td align="right">0.8557692</td>
+<td align="right">0.9369369</td>
+<td align="right">0.8188976</td>
+<td align="right">0.8739496</td>
 </tr>
 </tbody>
 </table>
 </div>
 <div id="support-vector-machines-svm" class="section level3">
 <h3>Support Vector Machines (SVM)</h3>
+<p>Out of all the SVM methods offered by the caret package, we chose the <code>svmRadial</code> method.</p>
+<pre class="r"><code>sonarDTtenFoldCV &lt;- train(TargetOutput ~ ., data=sonarDf, method=&quot;svmRadial&quot;,trControl=tenFoldCVControl)
+sonarDTtenFoldCV %&gt;% getEvaluation(&quot;model&quot;) %&gt;% kable</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Accurary</th>
+<th align="right">Precision</th>
+<th align="right">Recall</th>
+<th align="right">F1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.8269231</td>
+<td align="right">0.8738739</td>
+<td align="right">0.8151261</td>
+<td align="right">0.8434783</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="naive-bayes" class="section level3">
+<h3>Naive Bayes</h3>
+<pre class="r"><code>sonarDTtenFoldCV &lt;- train(TargetOutput ~ ., data=sonarDf, method=&quot;nb&quot;,trControl=tenFoldCVControl)
+sonarDTtenFoldCV %&gt;% getEvaluation(&quot;model&quot;) %&gt;% kable</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Accurary</th>
+<th align="right">Precision</th>
+<th align="right">Recall</th>
+<th align="right">F1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.7644231</td>
+<td align="right">0.8018018</td>
+<td align="right">0.7672414</td>
+<td align="right">0.784141</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="neural-networks" class="section level3">
+<h3>Neural Networks</h3>
+<pre class="r"><code>sonarDTtenFoldCV &lt;- train(TargetOutput ~ ., data=sonarDf, method=&quot;nnet&quot;,trControl=tenFoldCVControl)</code></pre>
+<pre class="r"><code>sonarDTtenFoldCV %&gt;% getEvaluation(&quot;model&quot;) %&gt;% kable</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Accurary</th>
+<th align="right">Precision</th>
+<th align="right">Recall</th>
+<th align="right">F1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.8557692</td>
+<td align="right">0.9189189</td>
+<td align="right">0.8292683</td>
+<td align="right">0.8717949</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>

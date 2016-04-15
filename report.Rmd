@@ -14,6 +14,8 @@ library(caret)
 library(RWeka)
 library(e1071)
 library(randomForest)
+library(kernlab)
+library(klaR)
 ```
 
 # Helper functions
@@ -40,7 +42,7 @@ getEvaluation <- function(entity,myType) {
 
 # Reading the sonar dataset
 We read the whole dataset, and give the target output column a clear name.
-```{r}
+```{r cache=TRUE}
 #sonarDf <- read.csv('C:/Users/Amir George/Rworkspace/Assignment1-DataScience/csen1061-assignment-modeling/datasets/sonar/sonar.all-data', header = FALSE)
 sonarDf <- read.csv('datasets/sonar/sonar.all-data', header = FALSE)
 names(sonarDf)[names(sonarDf)=="V61"] <- "TargetOutput"
@@ -48,7 +50,7 @@ names(sonarDf)[names(sonarDf)=="V61"] <- "TargetOutput"
 
 # Section 2 in assignment description
 In this section we construct a C4.5 decision tree on the sonar dataset, using the entire dataset as the learning set, and showcase the different classification evaluation measures. We consider the metal class as the positive class.
-```{r}
+```{r cache=TRUE}
 #sonarDTall <- J48(TargetOutput ~ ., data = sonarDf)
 sonarDTall <- train(TargetOutput ~ ., data=sonarDf, method="J48")
 #sonarDTall %>% getEvaluation("model") %>% kable
@@ -57,7 +59,7 @@ confusionMatrix(predictions, sonarDf[,61]) %>% getEvaluation(myType = "matrix") 
 ```
 
 We should note that the above measures are not reliable since training and testing were done on the same dataset, which should never be done due to overfitting. To avoid this problem, we will use stratified 10-fold cross-validation.
-```{r}
+```{r cache=TRUE}
 tenFoldCVControl <- trainControl(method = "cv", number = 10)
 sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="J48",trControl=tenFoldCVControl)
 sonarDTtenFoldCV %>% getEvaluation("model") %>% kable
@@ -67,12 +69,29 @@ sonarDTtenFoldCV %>% getEvaluation("model") %>% kable
 In this section we will also train and test using 10-fold CV on the sonar dataset but with other classification algorithms.
 
 ### Random Forest
-```{r}
+```{r cache=TRUE}
 sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="rf",trControl=tenFoldCVControl)
 sonarDTtenFoldCV %>% getEvaluation("model") %>% kable
 ```
 
 ###Support Vector Machines (SVM)
-```{r}
-
+Out of all the SVM methods offered by the caret package, we chose the `svmRadial` method.
+```{r cache=TRUE}
+sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="svmRadial",trControl=tenFoldCVControl)
+sonarDTtenFoldCV %>% getEvaluation("model") %>% kable
 ```
+
+### Naive Bayes
+```{r cache=TRUE, warning=FALSE}
+sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="nb",trControl=tenFoldCVControl)
+sonarDTtenFoldCV %>% getEvaluation("model") %>% kable
+```
+
+### Neural Networks
+```{r cache=TRUE, message=FALSE, results = "hide"}
+sonarDTtenFoldCV <- train(TargetOutput ~ ., data=sonarDf, method="nnet",trControl=tenFoldCVControl)
+```
+```{r cache=TRUE}
+sonarDTtenFoldCV %>% getEvaluation("model") %>% kable
+```
+
