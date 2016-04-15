@@ -312,3 +312,6 @@ recSig %>% kable
 f1Sig <- sigMetric(f1Metric)
 f1Sig %>% kable
 ```
+
+## Statistical conclusions
+Difference in recall between C4.5 and SVM is statistically signifincant, `p=0.00069`, and intuitively from the earlier results SVM is the superior one.
