@@ -142,3 +142,17 @@ names(pimaDf)[names(pimaDf)=="V9"] <- "TargetOutput"
 pimaDf <- pimaDf  %>% mutate(TargetOutput = as.factor(TargetOutput))
 ```
 
+## Results of 10 by 10 CV for each dataset & algorithm pair
+```{r cache=TRUE}
+doCV10by10 <- function(df,algorithm) {
+  randSeeds <- c(100, 458, 2532, 324, 7655, 987, 723, 247, 956, 3421)
+  model <- algorithm(TargetOutput ~ ., data = df)
+  res <- c(0,0,0,0)
+  for (s in randSeeds) {
+    tenFoldModel <- evaluate_Weka_classifier(model, numFolds = 10, seed = s)
+    myMetrics <- tenFoldModel$confusionMatrix %>% getEvaluation
+    res <- res + myMetrics
+  }
+  res / 10
+}
+```
